@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useHabitsStore } from '~/stores/habits'
 import type { AppData, Habit } from '~/types/app-data'
 import { APP_DATA_SCHEMA_VERSION, DEFAULT_SETTINGS } from '~/types/app-data'
+import { buildCurrentHabitsPrompt, buildGettingStartedPrompt } from '~/utils/domain/ai-prompts'
 import {
   categoryFilterOptions,
   categoryOptions,
@@ -166,7 +167,7 @@ describe('category in the habits store', () => {
   })
 })
 
-describe('category in merge and demo data', () => {
+describe('category in merge, demo data and prompts', () => {
   it('U10: merge detects a category-only change as an edit', () => {
     const base: AppData = { schemaVersion: 2, habits: [habit('a')], entries: [], suggestions: [], settings: { ...DEFAULT_SETTINGS } }
     const theirs: AppData = { ...base, habits: [habit('a', { category: 'health' })] }
@@ -181,5 +182,12 @@ describe('category in merge and demo data', () => {
     const data = generateDemoData(new Date(2026, 0, 15))
     expect(new Set(data.habits.map(item => item.category)).size).toBeGreaterThanOrEqual(2)
     expect(parseAppData(data).habits.map(item => item.category)).toEqual(data.habits.map(item => item.category))
+  })
+
+  it('U12: AI prompts mention and export category', () => {
+    expect(buildGettingStartedPrompt('2026-01-01')).toContain('"health" | "learning" | "work" | "other"')
+    const current = buildCurrentHabitsPrompt([habit('a', { category: 'work' })])
+    expect(current).toContain('"category": "work"')
+    expect(current).toContain('"category": "health|learning|work|other"')
   })
 })
