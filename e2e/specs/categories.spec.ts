@@ -1,5 +1,7 @@
 import { test, expect } from '../support/fixtures'
 import { HabitFormPage } from '../support/pages/habit-form'
+import { DashboardPage } from '../support/pages/dashboard'
+import { readPersistedStore } from '../support/seed'
 import { addDaysKey, makeAppData, makeHabit, todayKey } from '../support/data'
 import { appRoutePattern } from '../support/url'
 
@@ -98,5 +100,55 @@ test.describe('Habit categories', () => {
 
     await chooseFilter(page, 'habit-category-filter', 'Health')
     await expect(page.locator('.habit-card')).toHaveCount(6)
+  })
+
+  test('E4: the Today queue and counters follow the category filter', async ({ authedPage: page, seed }) => {
+    await seed(makeAppData({
+      habits: [
+        dailyHabit('Run', 'health'),
+        dailyHabit('Stretch', 'health'),
+        dailyHabit('Read', 'learning'),
+        dailyHabit('Yoga', 'health', { pauses: [{ start: addDaysKey(todayKey(), -1), end: addDaysKey(todayKey(), 1) }] }),
+      ],
+    }))
+    await page.goto('/app')
+    const dash = new DashboardPage(page)
+    await expect(dash.progressText()).toContainText('0 of 3 reviewed')
+
+    await dash.filterCategory('Health')
+    await expect(dash.progressText()).toContainText('0 of 2 reviewed')
+    await expect(dash.cards).toHaveCount(2)
+    await expect(dash.card('Run').getByTestId('habit-category-badge')).toContainText('Health')
+    // The streak strip and the paused alert ignore the filter.
+    await expect(page.getByText('4 habits')).toBeVisible()
+    await expect(page.getByText('1 habit is paused today')).toBeVisible()
+
+    await dash.markDone('Run')
+    await expect(dash.progressText()).toContainText('1 of 2 reviewed')
+    await expect(page.getByTestId('today-category-filter')).toContainText('Health')
+
+    // All Health habits reviewed while Read (Learning) is still open: the Open tab must
+    // not claim that everything due today is reviewed.
+    await dash.markDone('Stretch')
+    await expect(dash.progressText()).toContainText('2 of 2 reviewed')
+    await expect(page.getByTestId('today-open-filtered-empty')).toContainText('No open habits in Health')
+    await expect(page.getByTestId('today-open-filtered-empty')).toContainText('1 open habit is in other categories.')
+    await expect(page.getByText('Everything due today has already been reviewed.')).toHaveCount(0)
+    await expect
+      .poll(async () => (await readPersistedStore<{ status: string }>(page, 'entries')).filter(entry => entry.status === 'done').length)
+      .toBe(2)
+    await page.reload()
+    await expect(page.getByTestId('today-category-filter')).toContainText('Health')
+    await expect(dash.progressText()).toContainText('2 of 2 reviewed')
+    await page.getByTestId('today-open-filtered-empty').getByRole('button', { name: 'Show all categories' }).click()
+    await expect(page.getByTestId('today-category-filter')).toContainText('All categories')
+    await expect(dash.card('Read')).toBeVisible()
+
+    await dash.filterCategory('Work')
+    await expect(page.getByText('1 habit is paused today')).toBeVisible()
+    await expect(page.getByText('No due habits in Work')).toBeVisible()
+    await expect(page.getByText('No habits due today')).toHaveCount(0)
+    await page.getByRole('button', { name: 'Show all categories' }).click()
+    await expect(dash.progressText()).toContainText('2 of 3 reviewed')
   })
 })
