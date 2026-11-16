@@ -1,6 +1,6 @@
 # Verification: Habit categories with filter
 
-Branch: stufe/06-verify-spec-abgleich @ 7eb3581  ·  Verdict: Pass
+Branch: stufe/07-verify-review @ 4ed2aeb  ·  Verdict: Pass
 
 ## Acceptance criteria
 | AC | Code + test | Result |
@@ -24,12 +24,34 @@ yet. Outside the feature the diff carries the course material (`.claude/skills/`
 ## Gates
 | Gate | Result | Duration |
 | --- | --- | --- |
-| `npm run lint` | green | 4 s |
+| `npm run lint` | green | 3 s |
 | `npm run typecheck` | green | 5 s |
 | `npm test` | green, 452 tests in 50 files | 8 s |
-| `PORT=3110 E2E_PORT=3110 npm run test:e2e` | green, 117 passed, 1 skipped (mobile-only bottom-nav test in the desktop project); `categories.spec.ts` 5 tests x 2 projects | 47 s |
+| `PORT=3110 E2E_PORT=3110 npm run test:e2e` | green, 117 passed, 1 skipped (mobile-only bottom-nav test in the desktop project); `categories.spec.ts` 5 tests x 2 projects | 46 s |
+
+## Review findings
+The `reviewer` subagent got only the spec path and the branch and reviewed
+`git diff main...HEAD` (2.5 min). I checked every finding in the code; all of them hold.
+
+### Blocking
+None.
+
+### Non-blocking
+- `docs/adr/0026-habit-category-additive-defaulted-field.md:34` calls a rollback "safe".
+  An older build or a stale PWA tab strips `category` on load and its next save writes
+  the habits without it, so all categories fall back to Other. The ADR should name that
+  data loss.
+- `app/pages/app/habits/index.vue:29-31`: with the filter on `all`, `filterByCategory`
+  returns its input, so `.sort()` sorts the cached `visibleHabits` array in place.
+  Harmless today (nothing else reads it), but a side effect inside a computed.
+- `e2e/specs/categories.spec.ts:48`: E2 opens the legacy path `/habits/<id>`, which the
+  auth middleware maps to `/app/habits/<id>`. The list's own Edit button uses the same
+  path, so it mirrors the app, but E2 also depends on that mapping.
+- `e2e/specs/categories.spec.ts:57`: E2 waits a fixed 1.5 s for the debounced save before
+  the reload; E4 polls the persisted store instead. The fixed wait can flake on slow CI.
+- `app/utils/domain/categories.ts:34`: `categoryLabel` is exported but unused.
+- AC1 reload is proven for an edited habit (E2), not for a newly created one (E1).
 
 ## Not verified
-- No independent review: the evidence above is my own reading of the code.
 - No browser check; the user-facing criteria are proven by e2e tests only.
 - AC6 "without a recovery banner" is proven by the parse status `ok` (U1, U2), not in the UI.
