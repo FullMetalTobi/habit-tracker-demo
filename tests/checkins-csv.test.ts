@@ -103,6 +103,20 @@ describe('serializeCheckinsCsv (#3)', () => {
     expect(row).toContain(',\'+1 more rep,')
   })
 
+  it.each([
+    ['-2 reps', '\'-2 reps'],
+    ['@SUM(A1)', '\'@SUM(A1)'],
+    ['\tTabbed', '\'\tTabbed'],
+    ['@a,b', '"\'@a,b"'],
+  ])('prefixes formula-like note %j', (note, cell) => {
+    const csv = serializeCheckinsCsv(
+      [buildHabit()],
+      [buildEntry({ status: 'missed', completedAt: null, missReasonCode: 'forgot', missReasonNote: note })],
+    )
+
+    expect(lines(csv)[1]).toBe(`2026-02-08,Morning run,missed,I forgot,${cell},`)
+  })
+
   it('returns only the header for no check-ins', () => {
     expect(lines(serializeCheckinsCsv([], []))).toEqual(['date,habit,status,reason,note,completed_at', ''])
   })
