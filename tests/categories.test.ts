@@ -3,6 +3,12 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useHabitsStore } from '~/stores/habits'
 import type { AppData, Habit } from '~/types/app-data'
 import { APP_DATA_SCHEMA_VERSION, DEFAULT_SETTINGS } from '~/types/app-data'
+import {
+  categoryFilterOptions,
+  categoryOptions,
+  filterByCategory,
+  parseCategoryFilter,
+} from '~/utils/domain/categories'
 import { generateDemoData } from '~/utils/domain/demo-data-generator'
 import { extractImportedHabits, serializeBackup } from '~/utils/persistence/backup'
 import { mergeAppData } from '~/utils/persistence/merge-app-data'
@@ -34,6 +40,31 @@ function withoutCategory(h: Habit): Omit<Habit, 'category'> {
   const { category: _category, ...rest } = h
   return rest
 }
+
+describe('category filter helpers', () => {
+  it('parseCategoryFilter accepts known categories and falls back to all', () => {
+    expect(parseCategoryFilter('health')).toBe('health')
+    expect(parseCategoryFilter('work')).toBe('work')
+    expect(parseCategoryFilter('bogus')).toBe('all')
+    expect(parseCategoryFilter(undefined)).toBe('all')
+    expect(parseCategoryFilter(null)).toBe('all')
+    expect(parseCategoryFilter(['learning', 'work'])).toBe('learning')
+    expect(parseCategoryFilter([])).toBe('all')
+  })
+
+  it('filterByCategory returns items unchanged for all, otherwise filters', () => {
+    const items = [habit('a', { category: 'health' }), habit('b', { category: 'work' }), habit('c')]
+    expect(filterByCategory(items, 'all')).toBe(items)
+    expect(filterByCategory(items, 'work').map(item => item.id)).toEqual(['b'])
+    expect(filterByCategory(items, 'learning')).toEqual([])
+  })
+
+  it('exposes four form options and a leading "All categories" filter option', () => {
+    expect(categoryOptions.map(option => option.value)).toEqual(['health', 'learning', 'work', 'other'])
+    expect(categoryFilterOptions[0]).toMatchObject({ label: 'All categories', value: 'all' })
+    expect(categoryFilterOptions).toHaveLength(5)
+  })
+})
 
 describe('category persistence and migration', () => {
   it('U1: a V2 payload without category parses ok with other', () => {
@@ -124,6 +155,14 @@ describe('category in the habits store', () => {
     store.updateHabit(health.id, { ...input, archived: false, category: 'work' })
     expect(store.habitById(health.id)!.category).toBe('work')
     expect(store.snapshot().map(item => item.category).sort()).toEqual(['other', 'work'])
+  })
+
+  it('U8: habitsByCategory returns matching habits', () => {
+    setActivePinia(createPinia())
+    const store = useHabitsStore()
+    store.hydrate([habit('a', { category: 'health' }), habit('b'), habit('c', { category: 'health' })])
+    expect(store.habitsByCategory('health').map(item => item.id)).toEqual(['a', 'c'])
+    expect(store.habitsByCategory('learning')).toEqual([])
   })
 })
 

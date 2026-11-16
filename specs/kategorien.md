@@ -66,7 +66,7 @@ coaching, reminders or stats. UI texts stay English.
    `migrateToV2`; `habitsEqualIgnoringId`; default in `createHabit`/`updateHabit`; demo data
    categories; `makeHabit` and the test literals. Tests first: `tests/categories.test.ts`
    (old V2, unknown value, V1, lenient import, backup round trip, fixture, store, merge, demo).
-3. [ ] Pure helpers in `app/utils/domain/categories.ts` (labels, icons, options,
+3. [x] Pure helpers in `app/utils/domain/categories.ts` (labels, icons, options,
    `parseCategoryFilter`, `filterByCategory`), `habitsByCategory` getter,
    `app/composables/use-category-filter.ts` for the URL sync. Unit tests first.
 4. [ ] Form: category select in `HabitForm.vue`, payload in `new.vue` and `[id].vue`, badge
