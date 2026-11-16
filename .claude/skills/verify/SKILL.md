@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Verify an implementation against its spec. Checks every acceptance criterion, runs the gates and writes a verification report.
+description: Verify an implementation against its spec. Checks every acceptance criterion, runs the gates, gets a review from a fresh reviewer subagent and writes a verification report.
 argument-hint: "[specs/<slug>.md]"
 disable-model-invocation: true
 ---
@@ -45,6 +45,15 @@ of the build, so stop it first.
 A red gate is a blocking finding. Never rerun a failing test until it passes by luck;
 report it.
 
+## Fresh review
+
+Start the **reviewer** subagent (`.claude/agents/reviewer.md`) with the Agent tool. It
+begins with an empty context, so the review is not anchored on your own view. Give it
+only the spec path and the branch, not your conclusions. It reviews
+`git diff main...HEAD` and returns findings with file, line and severity. Check each
+finding yourself in the code before you put it in the report, and drop the ones that
+do not hold.
+
 ## Report
 
 Write `specs/<slug>.verification.md` and show it to the user:
@@ -60,12 +69,17 @@ Branch: <branch> @ <sha>  ·  Verdict: Pass | Issues found
 ## Gates
 | Gate | Result | Duration |
 
+## Review findings
+### Blocking
+### Non-blocking
+
 ## Not verified
 What you could not check, and why.
 ```
 
 The verdict is **Pass** only when
 - every gate is green,
-- every acceptance criterion is `met`.
+- every acceptance criterion is `met`,
+- no blocking review finding is open.
 
 Commit only the report: `docs(spec): add verification report for <slug>`.
