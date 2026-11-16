@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Verify an implementation against its spec. Checks every acceptance criterion, runs the gates, gets a review from a fresh reviewer subagent, walks the criteria in a real browser with playwright-cli and writes a verification report. With --pr it opens a draft PR that refers to the issue.
+description: Verify an implementation against its spec. Checks every acceptance criterion, runs the gates, gets a review from a fresh reviewer subagent, walks the criteria in a real browser with playwright-cli and writes a verification report. With --pr it opens a GitLab draft MR that refers to the ticket, waits for the pipeline and moves the Jira ticket to In Review.
 argument-hint: "[specs/<slug>.md] [--pr]"
 disable-model-invocation: true
 ---
@@ -109,21 +109,33 @@ The verdict is **Pass** only when
 
 Commit only the report: `docs(spec): add verification report for <slug>`.
 
-## Draft PR (only with `--pr`)
+## Draft MR (only with `--pr`)
 
-Only if the user passed `--pr`, the verdict is Pass, and the spec names an issue:
+Only if the user passed `--pr`, the verdict is Pass, and the spec names a ticket:
 
-1. Write the PR body to a temporary file: a short summary, the line `Refs #<n>`, and
-   the verification report.
-2. Push the branch and open the PR as a draft:
+1. Write the MR description to a temporary file, following
+   `.gitlab/merge_request_templates/Default.md`: a short summary, the spec link, the
+   verification report, and the line `Relates to <KEY>` (or `Relates to #<n>` for a
+   GitLab issue).
+2. Push the branch and open the MR as a draft:
 
    ```bash
    git push -u origin HEAD
-   gh pr create --draft --base main --title "<type>: <title>" --body-file <body>
+   glab mr create --draft --target-branch main --title "<type>: <title>" --description-file <body> --yes
    ```
 
-3. Show the user the PR link.
+3. Wait for the pipeline: `glab ci status --wait`. Read the final status in the output.
+   A failed pipeline is a blocking finding: report it and leave the ticket as it is.
+4. Only with a green pipeline and a Jira key: move the ticket and comment the MR link.
+   Use the status name of your Jira workflow.
 
-Use `Refs #<n>`, not `Closes #<n>`: the issue stays open until a human has reviewed
-and merged the PR. Never merge, never mark the PR ready, and never open a PR with a red
+   ```bash
+   acli jira workitem transition --key <KEY> --status "In Review" --yes
+   acli jira workitem comment create --key <KEY> --body "Draft MR: <url>. Verification: Pass, see specs/<slug>.verification.md."
+   ```
+
+5. Show the user the MR link.
+
+Use `Relates to`, not `Closes`: the ticket stays open until a human has reviewed and
+merged the MR. Never merge, never mark the MR ready, and never open an MR with a red
 gate.

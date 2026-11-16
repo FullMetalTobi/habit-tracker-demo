@@ -1,7 +1,7 @@
 ---
 name: spec
-description: Turn a task or a GitHub issue into a reviewed specification in specs/<slug>.md. Reads AGENTS.md and docs/adr/, researches the code with a read-only subagent, asks the human about open points, then stops for approval. Use when the user wants to plan or specify a feature before coding.
-argument-hint: "[issue-number | task description]"
+description: Turn a task, a Jira work item or a GitLab issue into a reviewed specification in specs/<slug>.md. Reads AGENTS.md and docs/adr/, researches the code with a read-only subagent, asks the human about open points, then stops for approval. Use when the user wants to plan or specify a feature before coding.
+argument-hint: "[jira-key | issue-number | task description]"
 ---
 
 # Spec
@@ -12,9 +12,11 @@ You plan, you do not build. Write no code, and change no file except the spec.
 
 ## 1. Read the task
 
-- If the argument is an issue number (`42` or `#42`), read it with
-  `gh issue view <n> --json number,title,body,comments`. Read the title, the body, and
-  all comments. The issue's acceptance criteria are the starting point, not the limit.
+- If the argument is a Jira key (`HAB-42`), read it with
+  `acli jira workitem view <KEY> --fields '*all' --json`. If it is a GitLab issue
+  number (`42` or `#42`), read it with `glab issue view <n> --comments`. Read the
+  title, the description, and all comments. The ticket's acceptance criteria are the
+  starting point, not the limit.
 - Otherwise the argument is the task itself.
 - If there is no argument, ask the user what to specify and stop.
 
@@ -54,7 +56,7 @@ Pick a short kebab-case slug (for example `kategorien` or `csv-export`) and writ
 ```markdown
 # <Title>
 
-Issue: #<n> (or "none")  ·  Status: draft  ·  Approved-by: –
+Issue: <KEY> or #<n> (or "none")  ·  Status: draft  ·  Approved-by: –
 
 ## Context
 Why we build this and for whom, in 2 to 4 sentences.

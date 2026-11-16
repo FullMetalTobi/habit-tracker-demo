@@ -2,6 +2,7 @@
 
 Local-first habit tracker: Nuxt 4 SPA (`ssr: false`), Pinia, Dexie/IndexedDB, Zod. No backend.
 UI texts are English. Use Node 22 (`.nvmrc`).
+Tickets live in Jira (`acli jira workitem`), code and merge requests in GitLab (`glab`); templates in `.gitlab/`.
 
 ## Gates (all green before a commit)
 ```bash
