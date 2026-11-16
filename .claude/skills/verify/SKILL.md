@@ -1,7 +1,7 @@
 ---
 name: verify
-description: Verify an implementation against its spec. Checks every acceptance criterion, runs the gates, gets a review from a fresh reviewer subagent, walks the criteria in a real browser with playwright-cli and writes a verification report.
-argument-hint: "[specs/<slug>.md]"
+description: Verify an implementation against its spec. Checks every acceptance criterion, runs the gates, gets a review from a fresh reviewer subagent, walks the criteria in a real browser with playwright-cli and writes a verification report. With --pr it opens a draft PR that refers to the issue.
+argument-hint: "[specs/<slug>.md] [--pr]"
 disable-model-invocation: true
 ---
 
@@ -108,3 +108,22 @@ The verdict is **Pass** only when
 - every user-facing criterion passed in the browser.
 
 Commit only the report: `docs(spec): add verification report for <slug>`.
+
+## Draft PR (only with `--pr`)
+
+Only if the user passed `--pr`, the verdict is Pass, and the spec names an issue:
+
+1. Write the PR body to a temporary file: a short summary, the line `Refs #<n>`, and
+   the verification report.
+2. Push the branch and open the PR as a draft:
+
+   ```bash
+   git push -u origin HEAD
+   gh pr create --draft --base main --title "<type>: <title>" --body-file <body>
+   ```
+
+3. Show the user the PR link.
+
+Use `Refs #<n>`, not `Closes #<n>`: the issue stays open until a human has reviewed
+and merged the PR. Never merge, never mark the PR ready, and never open a PR with a red
+gate.
