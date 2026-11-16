@@ -1,4 +1,4 @@
-Closes #<!-- issue number; use Refs # if this only partially addresses it -->
+Refs #<!-- issue number. Refs, not Closes: a human closes the issue after review and merge. -->
 
 ## Summary
 
