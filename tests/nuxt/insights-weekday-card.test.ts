@@ -76,7 +76,7 @@ describe('InsightsWeekdayCard (#2)', () => {
     const text = wrapper.text()
 
     expect(text).toContain('No weekday stands out')
-    expect(text).toContain('All 7 tracked weekdays sit at 100% for all time.')
+    expect(text).toContain('All 7 compared weekdays sit at 100% for all time.')
     expect(text).not.toContain('Strongest day')
   })
 })

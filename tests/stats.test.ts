@@ -422,6 +422,20 @@ describe('weekdayExtremes (#2)', () => {
     expect(result.status === 'ok' && result.strongest).toMatchObject({ weekday: 5, total: 4 })
   })
 
+  it('breaks ties for the weakest weekday by more check-ins', () => {
+    const habits = [buildHabit(), buildHabit({ id: 'habit_2', scheduleWeekdays: [6] })]
+    // Daily habit: Fridays and Saturdays missed. Second habit misses Saturdays too.
+    const entries = [
+      ...twoWeeksOfEntries('habit_1', date => (['2026-02-06', '2026-02-07', '2026-02-13', '2026-02-14'].includes(date) ? 'missed' : 'done')),
+      ...twoWeeksOfEntries('habit_2', date => (date === '2026-02-07' || date === '2026-02-14' ? 'missed' : null)),
+    ]
+
+    const result = weekdayExtremes(habits, entries, TWO_WEEKS_FROM, TWO_WEEKS_TO, 1)
+
+    // Friday and Saturday are both 0%; Saturday has 4 check-ins, Friday 2.
+    expect(result.status === 'ok' && result.weakest).toMatchObject({ weekday: 6, total: 4, rate: 0 })
+  })
+
   it('reports even when every qualifying weekday has the same rate', () => {
     const entries = twoWeeksOfEntries('habit_1', () => 'done')
 

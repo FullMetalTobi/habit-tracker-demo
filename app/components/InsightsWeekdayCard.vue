@@ -73,7 +73,7 @@ function checkInsLabel(count: number): string {
         variant="subtle"
         icon="i-lucide-equal"
         title="No weekday stands out"
-        :description="`All ${result.weekdays} tracked weekdays sit at ${result.rate}% for ${windowPhrase}.`"
+        :description="`All ${result.weekdays} compared weekdays sit at ${result.rate}% for ${windowPhrase}.`"
       />
 
       <div
