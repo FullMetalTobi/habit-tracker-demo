@@ -8,6 +8,7 @@ definePageMeta({ layout: 'app' })
 const habitsStore = useHabitsStore()
 const entriesStore = useEntriesStore()
 const coachStore = useCoachStore()
+const settingsStore = useSettingsStore()
 const requestHeaders = useRequestHeaders(['accept-language'])
 
 // Reactive today from the central day clock so all today-anchored windows and
@@ -628,6 +629,15 @@ const inferredCoachUptake = computed(() =>
           </div>
         </UCard>
       </div>
+
+      <InsightsWeekdayCard
+        :habits="activeHabits"
+        :entries="entriesStore.entries"
+        :from-date="selectedWindowStart"
+        :to-date="today"
+        :week-starts-on="settingsStore.weekStartsOn"
+        :window-days="selectedCompletionDays"
+      />
     </div>
   </UPage>
 </template>
