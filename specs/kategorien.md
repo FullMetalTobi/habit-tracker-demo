@@ -1,6 +1,6 @@
 # Habit categories with filter
 
-Issue: #1  ·  Status: draft, waiting for approval
+Issue: #1  ·  Status: approved
 
 ## Context
 With many habits the Habits list and the Today queue get hard to scan. Users want to
