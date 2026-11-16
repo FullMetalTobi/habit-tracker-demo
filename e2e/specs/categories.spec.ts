@@ -14,6 +14,11 @@ function dailyHabit(name: string, category: 'health' | 'learning' | 'work' | 'ot
   })
 }
 
+async function chooseFilter(page: import('@playwright/test').Page, testId: string, label: string) {
+  await page.getByTestId(testId).click()
+  await page.getByRole('option', { name: label }).click()
+}
+
 test.describe('Habit categories', () => {
   test('E1: create with a category shows its badge; default is Other', async ({ authedPage: page }) => {
     const form = new HabitFormPage(page)
@@ -50,5 +55,48 @@ test.describe('Habit categories', () => {
     await page.waitForTimeout(1500)
     await page.reload()
     await expect(badge()).toContainText('Health')
+  })
+
+  test('E3: the Habits list filters by category via ?category=', async ({ authedPage: page, seed }) => {
+    await seed(makeAppData({
+      habits: [
+        dailyHabit('Run', 'health'),
+        dailyHabit('Read', 'learning'),
+        dailyHabit('Plan sprint', 'work'),
+      ],
+    }))
+    await page.goto('/app/habits')
+    await expect(page.locator('.habit-card')).toHaveCount(3)
+
+    await chooseFilter(page, 'habit-category-filter', 'Learning')
+    await expect(page.locator('.habit-card')).toHaveCount(1)
+    await expect(page.locator('.habit-card')).toContainText('Read')
+    await expect(page).toHaveURL(/category=learning/)
+    await page.reload()
+    await expect(page.locator('.habit-card')).toHaveCount(1)
+
+    await chooseFilter(page, 'habit-category-filter', 'Other')
+    await expect(page.getByText('No habits in Other')).toBeVisible()
+    await page.getByRole('button', { name: 'Show all categories' }).click()
+    await expect(page.locator('.habit-card')).toHaveCount(3)
+    await expect(page).not.toHaveURL(/category=/)
+
+    await page.goto('/app/habits?category=work')
+    await expect(page.locator('.habit-card')).toHaveCount(1)
+    await page.goto('/app/habits?category=bogus')
+    await expect(page.locator('.habit-card')).toHaveCount(3)
+  })
+
+  test('E3b: changing the filter jumps back to page 1', async ({ authedPage: page, seed }) => {
+    const health = Array.from({ length: 7 }, (_, index) => dailyHabit(`Health ${index + 1}`, 'health'))
+    await seed(makeAppData({ habits: [...health, dailyHabit('Plan sprint', 'work')] }))
+    await page.goto('/app/habits')
+    await expect(page.locator('.habit-card')).toHaveCount(6)
+
+    await page.getByRole('button', { name: 'Page 2' }).click()
+    await expect(page.locator('.habit-card')).toHaveCount(2)
+
+    await chooseFilter(page, 'habit-category-filter', 'Health')
+    await expect(page.locator('.habit-card')).toHaveCount(6)
   })
 })
