@@ -28,6 +28,8 @@ Nur die Übersicht: `--stat` anhängen.
 Gates: `npm run lint`, `npm run typecheck`, `npm test`,
 `PORT=3110 E2E_PORT=3110 npm run test:e2e`. Nie Port 3000.
 
+Zwei Branches neben der Kette: `kurs/live-start` ist die Basis für den Live-Lauf `/spec 1` → `/code` (`stufe/02-spec-voll` ohne `specs/kategorien.md`, plus `code`-Skill), `kurs/gitlab-jira` zeigt auf Basis von `stufe/10-verify-pr`, welche Zeilen ihr für GitLab und Jira tauscht: `git diff origin/stufe/10-verify-pr origin/kurs/gitlab-jira`.
+
 ## Verify fängt einen Fehler: `kurs/verify-rot`
 
 Alle Berichte auf den Stufen sagen Pass. Der Branch `kurs/verify-rot` zeigt den anderen
