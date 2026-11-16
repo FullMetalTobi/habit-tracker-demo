@@ -2,13 +2,15 @@
 import { Time } from '@internationalized/date'
 import type { FormSubmitEvent, RadioGroupItem } from '@nuxt/ui'
 import { z } from 'zod'
-import type { Habit, HabitPause, HabitType } from '~/types/app-data'
+import { DEFAULT_HABIT_CATEGORY, HABIT_CATEGORIES, HABIT_CATEGORY_LABELS } from '~/types/app-data'
+import type { Habit, HabitCategory, HabitPause, HabitType } from '~/types/app-data'
 import { compareDateKeys, formatTimeString, isValidDateKey, MAX_DATE_KEY, MIN_DATE_KEY, parseTimeString, todayDateKey } from '~/utils/domain/date'
 import { orderedWeekdayOptions } from '~/utils/domain/weekdays'
 
 interface HabitFormPayload {
   name: string
   type: HabitType
+  category: HabitCategory
   identityStatement: string
   scheduleWeekdays: number[]
   reminderTime: string | null
@@ -35,6 +37,7 @@ const emit = defineEmits<{
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   type: z.enum(['build', 'break']),
+  category: z.enum(HABIT_CATEGORIES),
   identityStatement: z.string().min(5, 'Identity statement should be specific.'),
   startDate: z
     .string()
@@ -47,6 +50,7 @@ type Schema = z.output<typeof schema>
 const state = reactive<Schema & { archived: boolean }>({
   name: props.initial?.name ?? '',
   type: props.initial?.type ?? 'build',
+  category: props.initial?.category ?? DEFAULT_HABIT_CATEGORY,
   identityStatement: props.initial?.identityStatement ?? '',
   startDate: props.initial?.startDate ?? todayDateKey(),
   archived: props.initial?.archived ?? false,
@@ -101,6 +105,8 @@ const typeOptions: RadioGroupItem[] = [
     description: 'Invert the 4 laws to make the behavior invisible, unattractive, difficult, and unsatisfying.',
   },
 ]
+
+const categoryOptions = HABIT_CATEGORIES.map(value => ({ value, label: HABIT_CATEGORY_LABELS[value] }))
 
 const toast = useToast()
 
@@ -168,6 +174,7 @@ function onSubmit(event: FormSubmitEvent<Schema>) {
   emit('submit', {
     name: event.data.name,
     type: event.data.type,
+    category: event.data.category,
     identityStatement: event.data.identityStatement,
     startDate: event.data.startDate,
     archived: state.archived,
@@ -207,6 +214,20 @@ function onSubmit(event: FormSubmitEvent<Schema>) {
         :items="typeOptions"
         value-key="value"
         variant="table"
+      />
+    </UFormField>
+
+    <UFormField
+      label="Category"
+      name="category"
+    >
+      <USelect
+        v-model="state.category"
+        :items="categoryOptions"
+        value-key="value"
+        class="w-full"
+        aria-label="Category"
+        data-testid="habit-category"
       />
     </UFormField>
 

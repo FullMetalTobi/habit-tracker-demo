@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
-import type { HabitType } from '~/types/app-data'
+import { HABIT_CATEGORY_LABELS } from '~/types/app-data'
+import type { HabitCategoryFilter, HabitType } from '~/types/app-data'
 import {
   addDays,
   calendarDateToDateKey,
@@ -121,6 +122,8 @@ const pausedHabitsForDate = computed(() =>
   habitsStore.activeHabits.filter(habit => isDateInHabitPause(habit, dateKey.value)),
 )
 
+const categoryFilter = ref<HabitCategoryFilter>('all')
+
 const dueHabitModels = computed(() =>
   dueHabits.value.map(habit => ({
     habit,
@@ -238,14 +241,22 @@ function compareByReminderThenName(
   )
 }
 
+// The category filter narrows only the queue lists; progress counters above keep
+// reflecting the whole day.
+const filteredHabitModels = computed(() =>
+  categoryFilter.value === 'all'
+    ? dueHabitModels.value
+    : dueHabitModels.value.filter(model => model.habit.category === categoryFilter.value),
+)
+
 const openHabits = computed(() =>
-  dueHabitModels.value
+  filteredHabitModels.value
     .filter(model => !model.entry)
     .sort(compareByReminderThenName),
 )
 
 const reviewedHabits = computed(() =>
-  dueHabitModels.value
+  filteredHabitModels.value
     .filter(model => Boolean(model.entry))
     .sort((left, right) => {
       const leftStatus = left.entry?.status
@@ -505,6 +516,11 @@ function reopenHabit(habitId: string): void {
               {{ isToday ? "Today's habit queue" : 'Habit queue' }}
             </h2>
           </div>
+          <HabitCategoryFilter
+            v-if="dueHabitModels.length"
+            v-model="categoryFilter"
+            class="mt-3"
+          />
         </template>
 
         <UEmpty
@@ -563,6 +579,14 @@ function reopenHabit(habitId: string): void {
                         :class="rightBadgeClass"
                       >
                         {{ typeMeta(model.habit.type).label }}
+                      </UBadge>
+                      <UBadge
+                        color="neutral"
+                        variant="outline"
+                        :class="rightBadgeClass"
+                        data-testid="queue-category-badge"
+                      >
+                        {{ HABIT_CATEGORY_LABELS[model.habit.category] }}
                       </UBadge>
                       <UBadge
                         color="neutral"
@@ -639,6 +663,14 @@ function reopenHabit(habitId: string): void {
                         :class="rightBadgeClass"
                       >
                         {{ typeMeta(model.habit.type).label }}
+                      </UBadge>
+                      <UBadge
+                        color="neutral"
+                        variant="outline"
+                        :class="rightBadgeClass"
+                        data-testid="queue-category-badge"
+                      >
+                        {{ HABIT_CATEGORY_LABELS[model.habit.category] }}
                       </UBadge>
                       <UBadge
                         color="neutral"

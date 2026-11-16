@@ -20,6 +20,7 @@ function buildInitialHabit(overrides: Partial<Habit> = {}): Habit {
     id: 'habit_1',
     name: 'Read 10 pages',
     type: 'build',
+    category: 'other',
     identityStatement: 'I am a person who reads every day.',
     scheduleWeekdays: [],
     reminderTime: null,

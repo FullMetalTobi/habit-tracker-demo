@@ -2,6 +2,18 @@ export const APP_DATA_SCHEMA_VERSION = 2 as const
 
 export type HabitType = 'build' | 'break'
 export type HabitStatus = 'done' | 'missed' | 'skipped'
+export const HABIT_CATEGORIES = ['health', 'learning', 'work', 'other'] as const
+export type HabitCategory = (typeof HABIT_CATEGORIES)[number]
+export const DEFAULT_HABIT_CATEGORY: HabitCategory = 'other'
+export const HABIT_CATEGORY_LABELS: Record<HabitCategory, string> = {
+  health: 'Health',
+  learning: 'Learning',
+  work: 'Work',
+  other: 'Other',
+}
+
+export type HabitCategoryFilter = HabitCategory | 'all'
+
 export const PRIMARY_COLOR_OPTIONS = ['sky', 'emerald', 'violet', 'rose', 'amber'] as const
 export type PrimaryColor = (typeof PRIMARY_COLOR_OPTIONS)[number]
 
@@ -64,6 +76,7 @@ export interface Habit {
   id: string
   name: string
   type: HabitType
+  category: HabitCategory
   identityStatement: string
   scheduleWeekdays: number[]
   reminderTime: string | null
@@ -134,6 +147,7 @@ export type AppData = AppDataV2
 export interface HabitCreateInput {
   name: string
   type: HabitType
+  category?: HabitCategory
   identityStatement: string
   scheduleWeekdays: number[]
   reminderTime: string | null

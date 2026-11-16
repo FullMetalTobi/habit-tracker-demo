@@ -74,6 +74,7 @@ function habitsEqualIgnoringId(a: Habit, b: Habit): boolean {
   return (
     a.name === b.name
     && a.type === b.type
+    && a.category === b.category
     && a.identityStatement === b.identityStatement
     && arraysEqual(a.scheduleWeekdays, b.scheduleWeekdays)
     && a.reminderTime === b.reminderTime

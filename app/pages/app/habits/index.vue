@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Habit, HabitType } from '~/types/app-data'
+import { HABIT_CATEGORY_LABELS } from '~/types/app-data'
+import type { Habit, HabitCategoryFilter, HabitType } from '~/types/app-data'
 import { isDateInHabitPause } from '~/utils/domain/date'
 import { sortWeekdaysForDisplay, WEEKDAY_LABELS } from '~/utils/domain/weekdays'
 
@@ -17,12 +18,14 @@ function isCurrentlyPaused(habit: Habit): boolean {
 }
 
 const showArchived = ref(false)
+const categoryFilter = ref<HabitCategoryFilter>('all')
 const page = ref(1)
 const itemsPerPage = 6
 
 const filteredHabits = computed(() =>
   habitsStore.habits
     .filter(habit => (showArchived.value ? true : !habit.archived))
+    .filter(habit => categoryFilter.value === 'all' || habit.category === categoryFilter.value)
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)),
 )
 
@@ -52,6 +55,10 @@ const habitTypeMeta: Record<HabitType, { label: string, color: 'primary' | 'warn
     badgeVariant: 'soft',
   },
 }
+
+watch(categoryFilter, () => {
+  page.value = 1
+})
 
 watch(total, (value) => {
   const maxPage = Math.max(1, Math.ceil(value / itemsPerPage))
@@ -104,7 +111,8 @@ function typeMeta(type: HabitType): { label: string, color: 'primary' | 'warning
           </div>
         </template>
 
-        <div class="space-y-2">
+        <div class="flex flex-wrap items-center gap-4">
+          <HabitCategoryFilter v-model="categoryFilter" />
           <UCheckbox
             v-model="showArchived"
             label="Show archived habits"
@@ -166,6 +174,14 @@ function typeMeta(type: HabitType): { label: string, color: 'primary' | 'warning
 
           <div class="space-y-3">
             <div class="flex flex-wrap gap-2">
+              <UBadge
+                color="neutral"
+                variant="soft"
+                icon="i-lucide-tag"
+                data-testid="habit-category-badge"
+              >
+                {{ HABIT_CATEGORY_LABELS[habit.category] }}
+              </UBadge>
               <UBadge
                 color="neutral"
                 variant="outline"

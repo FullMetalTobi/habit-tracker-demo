@@ -344,6 +344,7 @@ describe('parseLenientHabit (#69)', () => {
     id: 'habit_keep',
     name: 'Read',
     type: 'build',
+    category: 'learning',
     identityStatement: 'I am a reader',
     scheduleWeekdays: [1, 3, 5],
     reminderTime: '08:00',
@@ -353,6 +354,12 @@ describe('parseLenientHabit (#69)', () => {
     createdAt: '2026-02-01T00:00:00.000Z',
     updatedAt: '2026-02-02T00:00:00.000Z',
   }
+
+  it('defaults a missing or invalid category to other', () => {
+    const { category: _omit, ...withoutCategory } = cleanRaw
+    expect(parseLenientHabit(withoutCategory)?.category).toBe('other')
+    expect(parseLenientHabit({ ...cleanRaw, category: 'bogus' })?.category).toBe('other')
+  })
 
   it('returns a clean habit for a fully-specified raw item, preserving id/timestamps', () => {
     const habit = parseLenientHabit(cleanRaw)

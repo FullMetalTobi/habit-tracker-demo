@@ -50,6 +50,7 @@ export const useHabitsStore = defineStore('habits', {
         id: createId('habit'),
         name: input.name.trim(),
         type: input.type,
+        category: input.category ?? 'other',
         identityStatement: input.identityStatement.trim(),
         scheduleWeekdays: [...new Set(input.scheduleWeekdays)].sort(),
         reminderTime: input.reminderTime,
@@ -71,6 +72,7 @@ export const useHabitsStore = defineStore('habits', {
 
       habit.name = input.name.trim()
       habit.type = input.type
+      habit.category = input.category ?? 'other'
       habit.identityStatement = input.identityStatement.trim()
       habit.scheduleWeekdays = [...new Set(input.scheduleWeekdays)].sort()
       habit.reminderTime = input.reminderTime

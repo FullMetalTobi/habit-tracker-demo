@@ -49,6 +49,7 @@ export function makeHabit(overrides: Partial<Habit> = {}): Habit {
     id: overrides.id ?? uid('habit'),
     name: overrides.name ?? 'Read 10 pages',
     type: overrides.type ?? 'build',
+    category: overrides.category ?? 'other',
     identityStatement: overrides.identityStatement ?? 'I am a daily learner.',
     scheduleWeekdays: overrides.scheduleWeekdays ?? [0, 1, 2, 3, 4, 5, 6],
     reminderTime: overrides.reminderTime ?? '08:00',

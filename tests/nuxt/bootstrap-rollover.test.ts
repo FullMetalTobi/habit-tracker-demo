@@ -16,6 +16,7 @@ function buildHabit(overrides: Partial<Habit> = {}): Habit {
     id: 'habit_1',
     name: 'Morning run',
     type: 'build',
+    category: 'other',
     identityStatement: 'I am a runner.',
     scheduleWeekdays: [0, 1, 2, 3, 4, 5, 6],
     reminderTime: null,

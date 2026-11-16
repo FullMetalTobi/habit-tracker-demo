@@ -4,6 +4,7 @@ import {
   COLLECTION_LIMITS,
   DEFAULT_SETTINGS,
   FIELD_LIMITS,
+  HABIT_CATEGORIES,
   MISS_REASON_CODES,
   PRIMARY_COLOR_OPTIONS,
   type AppDataV2,
@@ -63,6 +64,8 @@ const HabitV1Schema = z.object({
 // ── V2 schemas (current shape) ───────────────────────────────────────────────
 
 const HabitSchema = HabitV1Schema.extend({
+  // Added after V2 without a version bump: absent in older payloads → 'other'.
+  category: z.enum(HABIT_CATEGORIES).default('other'),
   pauses: z.array(HabitPauseSchema).max(COLLECTION_LIMITS.pausesPerHabit),
 })
 
@@ -91,6 +94,7 @@ const LenientHabitImportSchema = z.object({
   id: z.string().min(1).max(FIELD_LIMITS.id).catch(() => createId('habit')),
   name: z.string().trim().min(1).max(FIELD_LIMITS.name),
   type: z.enum(['build', 'break']),
+  category: z.enum(HABIT_CATEGORIES).catch('other'),
   identityStatement: z.string().trim().min(1).max(FIELD_LIMITS.identity),
   scheduleWeekdays: z.preprocess(
     value =>
@@ -201,7 +205,7 @@ type AppDataV1Parsed = z.output<typeof AppDataV1Schema>
 export function migrateToV2(v1: AppDataV1Parsed): AppDataV2 {
   return {
     schemaVersion: APP_DATA_SCHEMA_VERSION,
-    habits: v1.habits.map(habit => ({ ...habit, pauses: [] })),
+    habits: v1.habits.map(habit => ({ ...habit, category: 'other' as const, pauses: [] })),
     entries: v1.entries,
     suggestions: v1.suggestions,
     settings: v1.settings,

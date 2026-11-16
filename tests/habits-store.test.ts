@@ -307,3 +307,24 @@ describe('habits store — dueHabitsForDate getter', () => {
     expect(due).toHaveLength(0)
   })
 })
+
+describe('habit categories', () => {
+  it('defaults to other, stores a chosen category and updates it', () => {
+    setActivePinia(createPinia())
+    const store = useHabitsStore()
+    const base = {
+      name: 'Run',
+      type: 'build' as const,
+      identityStatement: 'I am a runner',
+      scheduleWeekdays: [1],
+      reminderTime: null,
+      startDate: '2026-01-01',
+    }
+    const plain = store.createHabit(base)
+    expect(plain.category).toBe('other')
+    const health = store.createHabit({ ...base, category: 'health' })
+    expect(health.category).toBe('health')
+    store.updateHabit(health.id, { ...base, category: 'work', archived: false })
+    expect(store.habitById(health.id)?.category).toBe('work')
+  })
+})
