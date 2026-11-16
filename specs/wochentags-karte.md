@@ -60,12 +60,12 @@ No change to the data schema, the stores, persistence or the existing cards.
    switch, empty state, reload.
 
 ## Acceptance criteria
-- [ ] AC1: The card shows the strongest and the weakest weekday with their completion rate in percent.
-- [ ] AC2: Only due days count; paused, skipped and still-open days do not change a rate.
-- [ ] AC3: The card follows the selected window (7 days, 30 days, all time).
-- [ ] AC4: With too little data the card shows an explanatory empty state, not numbers.
-- [ ] AC5: If all qualifying weekdays have the same rate, the card says so.
-- [ ] AC6: The calculation is a pure function in `app/utils/domain/stats.ts` with unit tests.
+- [x] AC1: The card shows the strongest and the weakest weekday with their completion rate in percent.
+- [x] AC2: Only due days count; paused, skipped and still-open days do not change a rate.
+- [x] AC3: The card follows the selected window (7 days, 30 days, all time).
+- [x] AC4: With too little data the card shows an explanatory empty state, not numbers.
+- [x] AC5: If all qualifying weekdays have the same rate, the card says so.
+- [x] AC6: The calculation is a pure function in `app/utils/domain/stats.ts` with unit tests.
 
 ## Verification plan
 | AC | How we prove it | Type (unit / e2e / browser) |
