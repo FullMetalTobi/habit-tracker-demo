@@ -60,8 +60,8 @@ npm run typecheck
 npm test
 ```
 
-Run `npm run test:e2e` as well when you touched UI or flows. Fix failures at the
-cause. Never weaken, skip or delete a test to get green.
+Run `PORT=3110 E2E_PORT=3110 npm run test:e2e` as well when you touched UI or
+flows. Never use port 3000 (the Playwright default). Fix failures at the cause. Never weaken, skip or delete a test to get green.
 
 ## 5. Report
 
