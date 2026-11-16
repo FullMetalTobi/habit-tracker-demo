@@ -77,7 +77,7 @@ What we explicitly do not change.
 
 ## Verification plan
 | AC | How we prove it | Type (unit / e2e / browser) |
-Gates: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`.
+Gates: `npm run lint`, `npm run typecheck`, `npm test`, `PORT=3110 E2E_PORT=3110 npm run test:e2e`.
 Browser walk: the exact clicks for each user-facing AC, including a reload.
 ```
 
