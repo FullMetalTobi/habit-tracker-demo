@@ -28,6 +28,8 @@ Nur die Übersicht: `--stat` anhängen.
 Gates: `npm run lint`, `npm run typecheck`, `npm test`,
 `PORT=3110 E2E_PORT=3110 npm run test:e2e`. Nie Port 3000.
 
+Zwei Branches neben der Kette: `kurs/live-start` ist die Basis für den Live-Lauf `/spec 1` → `/code` (`stufe/02-spec-voll` ohne `specs/kategorien.md`, plus `code`-Skill), `kurs/gitlab-jira` zeigt auf Basis von `stufe/10-verify-pr`, welche Zeilen ihr für GitLab und Jira tauscht: `git diff origin/stufe/10-verify-pr origin/kurs/gitlab-jira`.
+
 ## Verify fängt einen Fehler: `kurs/verify-rot`
 
 Alle Berichte auf den Stufen sagen Pass. Der Branch `kurs/verify-rot` zeigt den anderen
@@ -39,6 +41,28 @@ due today has already been reviewed“, obwohl Habits anderer Kategorien offen s
 
 - Der eingebaute Fehler: `git diff origin/stufe/08-verify-browser origin/kurs/verify-rot -- app/`
 - Der Bericht: `git show origin/kurs/verify-rot:specs/kategorien.verification.md`
+
+## Weitere Branches
+
+Neben der Stufen-Kette gibt es weitere Branches im Repo. Ihr braucht sie für die Hausaufgabe nicht.
+
+| Branch | Wofür |
+| --- | --- |
+| `kurs/live-start` | Basis für die Live-Läufe im Kurs |
+| `kurs/verify-rot` | Verify mit Befund (siehe oben) |
+| `kurs/gitlab-jira` | Skills für GitLab und Jira |
+
+**Ältere Probeläufe aus der Vorbereitung.** Sie sind nicht Teil des Kurses und bleiben nur als Altlast stehen:
+
+- `kurs/sdd-skills`
+- `kurs/kategorien-prompt`: freier Prompt ohne Workflow, für den Vergleich mit `kurs/kategorien-sdd`
+- `kurs/kategorien-sdd`
+- `kurs/harness`
+- `kurs/agents-md`
+- `kurs/csv-export`
+
+**Draft-PR #5 (CSV-Export, Issue #3).** Eine Beispiel-Lösung aus der Vorbereitung. Wer die
+Hausaufgabe selbst machen will, schaut ihn erst danach an.
 
 ## Hausaufgabe
 
