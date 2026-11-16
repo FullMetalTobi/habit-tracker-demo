@@ -78,4 +78,5 @@ field there, or a change to it in one tab is lost when another tab saves (ADR-00
 | Fixture still parses | `tests/fixture-data.test.ts`, `tests/demo-data-generator.test.ts` |
 
 Fast loop: `npx vitest run --project unit storage-schema schema-migrations merge-app-data backup pause-mode`.
-Then all gates: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`.
+Then all gates: `npm run lint`, `npm run typecheck`, `npm test`,
+`PORT=3110 E2E_PORT=3110 npm run test:e2e` (never port 3000).
