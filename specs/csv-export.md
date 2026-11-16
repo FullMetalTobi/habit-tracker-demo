@@ -57,11 +57,11 @@ No change to the JSON backup, the import, the data schema or the stores.
 3. E2E `e2e/specs/csv-export.spec.ts`: download name and content, escaping, empty state.
 
 ## Acceptance criteria
-- [ ] AC1: Settings has a button that downloads `habit-checkins-<date>.csv`.
-- [ ] AC2: Each row has date, habit name, status (done, missed, skipped) and, if present, reason and note.
-- [ ] AC3: Values with commas, quotes or line breaks are escaped; the file starts with a UTF-8 BOM so umlauts show correctly.
-- [ ] AC4: Without check-ins the button is disabled and a hint is shown.
-- [ ] AC5: CSV generation has unit tests, the download an e2e test.
+- [x] AC1: Settings has a button that downloads `habit-checkins-<date>.csv`.
+- [x] AC2: Each row has date, habit name, status (done, missed, skipped) and, if present, reason and note.
+- [x] AC3: Values with commas, quotes or line breaks are escaped; the file starts with a UTF-8 BOM so umlauts show correctly.
+- [x] AC4: Without check-ins the button is disabled and a hint is shown.
+- [x] AC5: CSV generation has unit tests, the download an e2e test.
 
 ## Verification plan
 | AC | How we prove it | Type (unit / e2e / browser) |
