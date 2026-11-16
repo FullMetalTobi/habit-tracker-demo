@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Verify an implementation against its spec. Runs lint, typecheck and unit tests and writes a verification report.
+description: Verify an implementation against its spec. Runs lint, typecheck, unit and e2e tests and writes a verification report.
 argument-hint: "[specs/<slug>.md]"
 disable-model-invocation: true
 ---
@@ -26,7 +26,14 @@ Run them and record the result, the test counts and the duration of each:
 npm run lint
 npm run typecheck
 npm test
+PORT=3110 E2E_PORT=3110 npm run test:e2e
 ```
+
+The e2e run builds the app, serves it and drives it with Playwright. Never use port
+3000 (the Playwright default). `PORT` is the port the app listens on, `E2E_PORT` the
+one Playwright waits for, so set both to the same free port. If 3110 is taken, pick
+another free port. A dev server already running on that port would be reused instead
+of the build, so stop it first.
 
 A red gate is a blocking finding. Never rerun a failing test until it passes by luck;
 report it.
