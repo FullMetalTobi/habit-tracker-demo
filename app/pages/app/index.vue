@@ -255,12 +255,6 @@ const openHabits = computed(() =>
     .sort(compareByReminderThenName),
 )
 
-// Open habits hidden by the category filter, so the Open tab never claims that
-// everything is reviewed while other categories still have open habits.
-const openHabitsInOtherCategories = computed(() =>
-  allDueHabitModels.value.filter(model => !model.entry).length - openHabits.value.length,
-)
-
 const reviewedHabits = computed(() =>
   dueHabitModels.value
     .filter(model => Boolean(model.entry))
@@ -648,18 +642,7 @@ function reopenHabit(habitId: string): void {
           <template #open>
             <div class="mt-4 space-y-2">
               <UAlert
-                v-if="!openHabits.length && categoryFilter !== 'all'"
-                color="neutral"
-                variant="subtle"
-                :title="`No open habits in ${HABIT_CATEGORY_META[categoryFilter].label}`"
-                :description="openHabitsInOtherCategories
-                  ? `${openHabitsInOtherCategories} open ${openHabitsInOtherCategories === 1 ? 'habit is' : 'habits are'} in other categories.`
-                  : 'Every due habit in this category has been reviewed.'"
-                :actions="[{ label: 'Show all categories', icon: 'i-lucide-x', color: 'neutral', variant: 'outline', onClick: () => { categoryFilter = 'all' } }]"
-                data-testid="today-open-filtered-empty"
-              />
-              <UAlert
-                v-else-if="!openHabits.length"
+                v-if="!openHabits.length"
                 color="success"
                 variant="subtle"
                 title="No open habits"
