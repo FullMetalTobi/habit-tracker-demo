@@ -59,3 +59,25 @@ describe('HabitForm — weekday validation', () => {
     expect(wrapper.emitted('submit')).toBeUndefined()
   })
 })
+
+describe('HabitForm — category', () => {
+  it('defaults to other, preselects an existing category and emits it in the payload', async () => {
+    const created = await mountSuspended(HabitForm)
+    const createSelect = created.findComponent({ name: 'USelect' })
+    expect(createSelect.props('modelValue')).toBe('other')
+
+    const wrapper = await mountSuspended(HabitForm, {
+      props: { initial: buildInitialHabit({ category: 'work', scheduleWeekdays: [1] }) },
+    })
+    expect(wrapper.findComponent({ name: 'USelect' }).props('modelValue')).toBe('work')
+
+    await wrapper.find('form').trigger('submit')
+    await wrapper.vm.$nextTick()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    await wrapper.vm.$nextTick()
+
+    const emitted = wrapper.emitted('submit')
+    expect(emitted).toHaveLength(1)
+    expect(emitted![0]![0]).toMatchObject({ category: 'work' })
+  })
+})
