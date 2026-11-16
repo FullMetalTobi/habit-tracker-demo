@@ -1,5 +1,6 @@
-import type { CoachingSuggestion, Habit, HabitEntry, MissReasonCode } from '~/types/app-data'
-import { addDays, compareDateKeys, dateKeyRange, isHabitDueOnDate } from '~/utils/domain/date'
+import type { AppSettings, CoachingSuggestion, Habit, HabitEntry, MissReasonCode } from '~/types/app-data'
+import { addDays, compareDateKeys, dateKeyRange, isHabitDueOnDate, weekdayFromDateKey } from '~/utils/domain/date'
+import { weekdayRank } from '~/utils/domain/weekdays'
 
 /**
  * Pure, pause-aware habit-analytics derivations.
@@ -8,7 +9,7 @@ import { addDays, compareDateKeys, dateKeyRange, isHabitDueOnDate } from '~/util
  * `suggestions`) plus scalar params and builds any internal `habitId:date`
  * lookup itself — so the module is framework-independent and fully testable in
  * the fast Node `unit` project (ADR-0012). It sits in the `domain/` utility
- * category defined by ADR-0014 and imports only domain types and date helpers.
+ * category defined by ADR-0014 and imports only domain types and date/weekday helpers.
  *
  * Pause-awareness is inherited: the completion functions gate due days on
  * `isHabitDueOnDate` (already pause-aware, ADR-0010), and because paused days
@@ -251,4 +252,108 @@ export function coachUptake(
   }
 
   return Math.round((improvedCount / observableCount) * 100)
+}
+
+/** Completion of the counted habit-days that fall on one weekday (0=Sun … 6=Sat). */
+export interface WeekdayRate {
+  weekday: number
+  done: number
+  total: number
+  /** Rounded percentage of `done / total`. */
+  rate: number
+}
+
+/** A weekday needs at least this many counted habit-days to be compared. */
+export const WEEKDAY_MIN_CHECK_INS = 2
+/** At least this many weekdays must qualify before naming a strongest and weakest day. */
+export const WEEKDAY_MIN_WEEKDAYS = 2
+
+export type WeekdayExtremes
+  = | { status: 'insufficient', checkIns: number }
+    | { status: 'even', rate: number, weekdays: number, checkIns: number }
+    | { status: 'ok', strongest: WeekdayRate, weakest: WeekdayRate, checkIns: number }
+
+/**
+ * Per-weekday completion over `[fromDate, toDate]` (issue #2). A habit-day counts
+ * when the habit was due (`isHabitDueOnDate`: schedule, start date, archive and
+ * pauses) **and** it has a `done` or `missed` entry. `skipped` days and days
+ * without an entry yet (e.g. today, still open) are left out, so they neither
+ * raise nor lower a rate. Returns only weekdays with at least one counted day,
+ * in canonical order (Sunday first).
+ */
+export function weekdayCompletionRates(
+  habits: Habit[],
+  entries: HabitEntry[],
+  fromDate: string,
+  toDate: string,
+): WeekdayRate[] {
+  const lookup = buildEntryLookup(entries)
+  const done = Array.from({ length: 7 }, () => 0)
+  const total = Array.from({ length: 7 }, () => 0)
+
+  for (const date of dateKeyRange(fromDate, toDate)) {
+    const weekday = weekdayFromDateKey(date)
+    for (const habit of habits) {
+      if (!isHabitDueOnDate(habit, date)) {
+        continue
+      }
+
+      const status = lookup.get(entryLookupKey(habit.id, date))?.status
+      if (status !== 'done' && status !== 'missed') {
+        continue
+      }
+
+      total[weekday]! += 1
+      if (status === 'done') {
+        done[weekday]! += 1
+      }
+    }
+  }
+
+  return total.flatMap((count, weekday) =>
+    count === 0
+      ? []
+      : [{ weekday, done: done[weekday]!, total: count, rate: Math.round((done[weekday]! / count) * 100) }],
+  )
+}
+
+/**
+ * The strongest and the weakest weekday over `[fromDate, toDate]` (issue #2),
+ * built on {@link weekdayCompletionRates}. Only weekdays with at least
+ * {@link WEEKDAY_MIN_CHECK_INS} counted days compete, and at least
+ * {@link WEEKDAY_MIN_WEEKDAYS} of them must qualify, otherwise the result is
+ * `insufficient`. Equal rates are broken by more counted days, then by display
+ * order from `weekStartsOn`. When the best and the worst rate are equal the
+ * result is `even`, so no day is named as both. `checkIns` is the number of
+ * counted habit-days in the window.
+ */
+export function weekdayExtremes(
+  habits: Habit[],
+  entries: HabitEntry[],
+  fromDate: string,
+  toDate: string,
+  weekStartsOn: AppSettings['weekStartsOn'],
+): WeekdayExtremes {
+  const rates = weekdayCompletionRates(habits, entries, fromDate, toDate)
+  const checkIns = rates.reduce((sum, item) => sum + item.total, 0)
+  const qualifying = rates.filter(item => item.total >= WEEKDAY_MIN_CHECK_INS)
+
+  if (qualifying.length < WEEKDAY_MIN_WEEKDAYS) {
+    return { status: 'insufficient', checkIns }
+  }
+
+  const byDisplayOrder = (left: WeekdayRate, right: WeekdayRate) =>
+    weekdayRank(left.weekday, weekStartsOn) - weekdayRank(right.weekday, weekStartsOn)
+  const strongest = [...qualifying].sort(
+    (left, right) => right.rate - left.rate || right.total - left.total || byDisplayOrder(left, right),
+  )[0]!
+  const weakest = [...qualifying].sort(
+    (left, right) => left.rate - right.rate || right.total - left.total || byDisplayOrder(left, right),
+  )[0]!
+
+  if (strongest.rate === weakest.rate) {
+    return { status: 'even', rate: strongest.rate, weekdays: qualifying.length, checkIns }
+  }
+
+  return { status: 'ok', strongest, weakest, checkIns }
 }

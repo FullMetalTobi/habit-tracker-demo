@@ -6,6 +6,8 @@ import {
   overallCompletionRate,
   reasonDistribution,
   streakForHabit,
+  weekdayCompletionRates,
+  weekdayExtremes,
 } from '~/utils/domain/stats'
 import type { CoachingSuggestion, Habit, HabitEntry } from '~/types/app-data'
 
@@ -312,5 +314,157 @@ describe('stats — coachUptake', () => {
 
     // observationStart (2026-02-21) is after toDate (2026-02-20) → nothing observable.
     expect(coachUptake(suggestions, entries, '2026-02-01', '2026-02-20', null)).toBe(0)
+  })
+})
+
+// 2026-02-02 is a Monday; 2026-02-02..2026-02-15 covers every weekday twice.
+const TWO_WEEKS_FROM = '2026-02-02'
+const TWO_WEEKS_TO = '2026-02-15'
+
+function twoWeeksOfEntries(habitId: string, statusFor: (date: string) => HabitEntry['status'] | null): HabitEntry[] {
+  const entries: HabitEntry[] = []
+  for (let day = 2; day <= 15; day += 1) {
+    const date = `2026-02-${String(day).padStart(2, '0')}`
+    const status = statusFor(date)
+    if (status) {
+      entries.push(buildEntry({ id: `${habitId}_${date}`, habitId, date, status, completedAt: null }))
+    }
+  }
+  return entries
+}
+
+describe('weekdayCompletionRates (#2)', () => {
+  it('counts done and missed check-ins on due days per weekday', () => {
+    const habit = buildHabit()
+    // Mondays missed, every other day done.
+    const entries = twoWeeksOfEntries('habit_1', date => (date === '2026-02-02' || date === '2026-02-09' ? 'missed' : 'done'))
+
+    const rates = weekdayCompletionRates([habit], entries, TWO_WEEKS_FROM, TWO_WEEKS_TO)
+
+    expect(rates).toHaveLength(7)
+    expect(rates.find(rate => rate.weekday === 1)).toEqual({ weekday: 1, done: 0, total: 2, rate: 0 })
+    expect(rates.find(rate => rate.weekday === 3)).toEqual({ weekday: 3, done: 2, total: 2, rate: 100 })
+  })
+
+  it('ignores skipped days, open days, off-schedule entries and paused days', () => {
+    const habit = buildHabit({
+      scheduleWeekdays: [1, 2],
+      pauses: [{ start: '2026-02-09', end: '2026-02-09' }],
+    })
+    const entries = [
+      buildEntry({ id: 'e1', date: '2026-02-02', status: 'done' }), // Mon, counted
+      buildEntry({ id: 'e2', date: '2026-02-03', status: 'skipped' }), // Tue, skipped → ignored
+      buildEntry({ id: 'e3', date: '2026-02-04', status: 'missed' }), // Wed, not scheduled → ignored
+      buildEntry({ id: 'e4', date: '2026-02-09', status: 'missed' }), // Mon, paused → ignored
+      // 2026-02-10 (Tue) has no entry yet → open, ignored
+    ]
+
+    const rates = weekdayCompletionRates([habit], entries, TWO_WEEKS_FROM, TWO_WEEKS_TO)
+
+    expect(rates).toEqual([{ weekday: 1, done: 1, total: 1, rate: 100 }])
+  })
+
+  it('only counts dates inside the window and skips archived habits', () => {
+    const active = buildHabit()
+    const archived = buildHabit({ id: 'habit_2', archived: true })
+    const entries = [
+      buildEntry({ id: 'in', date: '2026-02-03', status: 'done' }),
+      buildEntry({ id: 'before', date: '2026-02-01', status: 'missed' }),
+      buildEntry({ id: 'arch', habitId: 'habit_2', date: '2026-02-03', status: 'missed' }),
+    ]
+
+    expect(weekdayCompletionRates([active, archived], entries, '2026-02-02', '2026-02-03')).toEqual([
+      { weekday: 2, done: 1, total: 1, rate: 100 },
+    ])
+  })
+})
+
+describe('weekdayExtremes (#2)', () => {
+  it('returns the strongest and the weakest weekday', () => {
+    const habit = buildHabit()
+    const entries = twoWeeksOfEntries('habit_1', (date) => {
+      if (date === '2026-02-02' || date === '2026-02-09') return 'missed' // Mondays 0%
+      if (date === '2026-02-03') return 'missed' // Tuesdays 50%
+      return 'done'
+    })
+
+    const result = weekdayExtremes([habit], entries, TWO_WEEKS_FROM, TWO_WEEKS_TO, 1)
+
+    expect(result.status).toBe('ok')
+    if (result.status !== 'ok') return
+    expect(result.weakest).toMatchObject({ weekday: 1, rate: 0 })
+    // Wed..Sun tie at 100%: the first in display order (week starts Monday) wins.
+    expect(result.strongest).toMatchObject({ weekday: 3, rate: 100 })
+    expect(result.checkIns).toBe(14)
+  })
+
+  it('breaks ties by the configured week start', () => {
+    const habit = buildHabit()
+    const entries = twoWeeksOfEntries('habit_1', date => (date === '2026-02-04' || date === '2026-02-11' ? 'missed' : 'done'))
+
+    const mondayFirst = weekdayExtremes([habit], entries, TWO_WEEKS_FROM, TWO_WEEKS_TO, 1)
+    const sundayFirst = weekdayExtremes([habit], entries, TWO_WEEKS_FROM, TWO_WEEKS_TO, 0)
+
+    expect(mondayFirst.status === 'ok' && mondayFirst.strongest.weekday).toBe(1)
+    expect(sundayFirst.status === 'ok' && sundayFirst.strongest.weekday).toBe(0)
+  })
+
+  it('prefers the weekday with more check-ins on equal rates', () => {
+    const habits = [buildHabit(), buildHabit({ id: 'habit_2', scheduleWeekdays: [5] })]
+    const entries = [
+      ...twoWeeksOfEntries('habit_1', date => (date === '2026-02-03' || date === '2026-02-10' ? 'missed' : 'done')),
+      ...twoWeeksOfEntries('habit_2', date => (date === '2026-02-06' || date === '2026-02-13' ? 'done' : null)),
+    ]
+
+    const result = weekdayExtremes(habits, entries, TWO_WEEKS_FROM, TWO_WEEKS_TO, 1)
+
+    // Friday has 4 done check-ins, the other 100% days only 2.
+    expect(result.status === 'ok' && result.strongest).toMatchObject({ weekday: 5, total: 4 })
+  })
+
+  it('reports even when every qualifying weekday has the same rate', () => {
+    const entries = twoWeeksOfEntries('habit_1', () => 'done')
+
+    expect(weekdayExtremes([buildHabit()], entries, TWO_WEEKS_FROM, TWO_WEEKS_TO, 1)).toEqual({
+      status: 'even',
+      rate: 100,
+      weekdays: 7,
+      checkIns: 14,
+    })
+  })
+
+  it('needs at least two weekdays with two check-ins each', () => {
+    const habit = buildHabit()
+    // One week only: every weekday has a single check-in.
+    const oneWeek = twoWeeksOfEntries('habit_1', date => (date <= '2026-02-08' ? 'done' : null))
+    // Two weeks, but only Mondays are scheduled.
+    const mondaysOnly = buildHabit({ scheduleWeekdays: [1] })
+    const mondays = twoWeeksOfEntries('habit_1', () => 'done')
+
+    expect(weekdayExtremes([habit], oneWeek, TWO_WEEKS_FROM, TWO_WEEKS_TO, 1)).toEqual({
+      status: 'insufficient',
+      checkIns: 7,
+    })
+    expect(weekdayExtremes([mondaysOnly], mondays, TWO_WEEKS_FROM, TWO_WEEKS_TO, 1)).toEqual({
+      status: 'insufficient',
+      checkIns: 2,
+    })
+    expect(weekdayExtremes([], [], TWO_WEEKS_FROM, TWO_WEEKS_TO, 1)).toEqual({ status: 'insufficient', checkIns: 0 })
+  })
+
+  it('leaves out weekdays below the threshold when picking extremes', () => {
+    const habit = buildHabit()
+    const entries = [
+      ...twoWeeksOfEntries('habit_1', (date) => {
+        if (date === '2026-02-02' || date === '2026-02-09') return 'done' // Mon 100%
+        if (date === '2026-02-03' || date === '2026-02-10') return 'missed' // Tue 0%
+        return null
+      }),
+      buildEntry({ id: 'wed', date: '2026-02-04', status: 'missed' }), // Wed: one check-in only
+    ]
+
+    const result = weekdayExtremes([habit], entries, TWO_WEEKS_FROM, TWO_WEEKS_TO, 1)
+
+    expect(result.status === 'ok' && [result.strongest.weekday, result.weakest.weekday]).toEqual([1, 2])
   })
 })
