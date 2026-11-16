@@ -54,7 +54,7 @@ Pick a short kebab-case slug (for example `kategorien` or `csv-export`) and writ
 ```markdown
 # <Title>
 
-Issue: #<n> (or "none")  ·  Status: draft, waiting for approval
+Issue: #<n> (or "none")  ·  Status: draft  ·  Approved-by: –
 
 ## Context
 Why we build this and for whom, in 2 to 4 sentences.
@@ -91,9 +91,16 @@ Rules for the content:
   backups, mobile width.
 - Data changes say whether `schemaVersion` changes and how old data migrates.
 - Keep it short. A reviewer should read it in five minutes.
+- The header line holds the approval. `Status:` is `draft` or `approved`, nothing
+  else. `Approved-by:` stays `–` until a human approves.
 
 ## 5. Stop for approval
 
 Show the user the spec path, a five-line summary, and the decisions you made.
 Then **stop**. Do not start coding. Implementation starts only after the human
 approves the spec, with `/code specs/<slug>.md`.
+
+Only a human approves. When they do, set the header to
+`Status: approved  ·  Approved-by: <name>, <YYYY-MM-DD>` and commit only the spec:
+`docs(spec): approve <slug>`. The approval then lives in the repo, where a reviewer
+can see it, not only in the chat. Never set `approved` on your own.
