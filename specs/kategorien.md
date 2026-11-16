@@ -59,7 +59,7 @@ No Dexie store or index change (filtering is in memory). No `schemaVersion` 3. N
 coaching, reminders or stats. UI texts stay English.
 
 ## Tasks
-1. [ ] ADR-0026 "Habit category as an additive defaulted field", index in `docs/adr/README.md`,
+1. [x] ADR-0026 "Habit category as an additive defaulted field", index in `docs/adr/README.md`,
    `docs/glossary.md`, `docs/architecture.md`.
 2. [ ] Data model: `HABIT_CATEGORIES` and `Habit.category` in `app/types/app-data.ts`;
    `HabitCategorySchema` with `.catch('other')` in the strict and lenient schema and in
