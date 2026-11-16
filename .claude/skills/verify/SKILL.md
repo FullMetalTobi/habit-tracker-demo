@@ -32,8 +32,12 @@ Run them and record the result and the duration of each:
 npm run lint
 npm run typecheck
 npm test
-npm run test:e2e
+PORT=3110 E2E_PORT=3110 npm run test:e2e
 ```
+
+Never use port 3000 (the Playwright default). `PORT` is the port the app listens on,
+`E2E_PORT` the one Playwright waits for, so set both to the same free port. If 3110 is
+taken, pick another free port.
 
 A red gate is a blocking finding.
 
@@ -50,17 +54,18 @@ put it in the report.
 
 Walk each user-facing acceptance criterion in a real browser, like a user would.
 
-1. Start the app: `npm run dev` (port 3000) in the background and wait until it
-   answers.
+1. Start the app: `PORT=3110 npm run dev` in the background and wait until
+   `http://localhost:3110` answers. Never use port 3000.
 2. Drive it with Playwright: use `playwright-cli` if it is installed
-   (`playwright-cli open http://localhost:3000`, then `snapshot`, `click`, `fill`,
+   (`playwright-cli open http://localhost:3110`, then `snapshot`, `click`, `fill`,
    `console`), otherwise a Playwright MCP or browser tool if one is available.
 3. Log in on `/login`; load demo data or create the habits the criterion needs.
 4. For every criterion: do the steps from the verification plan, check the result,
    then **reload** and check again. Check the browser console for errors.
 5. Look at the affected screens at 1280x800 and at 390x844 (mobile bottom nav).
 6. Take a screenshot as evidence for each criterion.
-7. Close the browser and stop the dev server when you are done.
+7. Close the browser and stop the dev server when you are done. A dev server left
+   running on 3110 would be reused by the next `test:e2e` run instead of the build.
 
 If no browser can be started, say so in the report. Never mark a criterion as
 verified in the browser when you only read the code.
