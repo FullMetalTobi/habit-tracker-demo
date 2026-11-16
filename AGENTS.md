@@ -25,6 +25,8 @@ Dev server: `PORT=3110 npm run dev`. Unit tests in `tests/` (Node), rendered com
 ## Hard rules
 - Schema changes are never silent. Any change to `app/types/app-data.ts` or the Zod schema
   needs a new ADR and must keep old data and old backups loading (ADR-0006, ADR-0022).
+  Follow the skill `schema-change`; the hook `schema-guard` runs the schema tests after
+  every edit of a schema file.
 - UI features do not need the storage layer. Read from the stores, compute in
   `app/utils/domain/`, render in a component.
 - Never use port 3000, neither for dev nor for e2e (the Playwright default is 3000).
