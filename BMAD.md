@@ -27,7 +27,7 @@ vergleichen: Was aus dem Brainstorming nehmt ihr in die Spec, was bewusst nicht?
 
 ```bash
 git fetch origin
-git switch --no-track -c bmad-ab-ue4 origin/bmad/03-spec-bereit
+git switch --no-track -c seminar/ab-ue4 origin/bmad/03-spec-bereit
 npm ci
 ```
 
@@ -42,6 +42,23 @@ Dann `/bmad-testarch-atdd` mit der Spec als Story-Datei, drei Zeilen in die Spec
   `git diff origin/bmad/<vorher> origin/bmad/<dieser> --stat`.
 - BMad Method 6.12.4 mit den Modulen `bmm`, `tea` (Test Architect 1.27.2) und `bmb`
   (BMad Builder 2.2.2), installiert für Claude Code (`.claude/skills/`).
+- Codex, Cursor, Copilot: Die Skills liegen nur unter `.claude/skills/`. **Nicht neu
+  installieren**: `--tools codex --yes` macht auf einem Stand mit `_bmad/` nur ein
+  Quick-Update der vorhandenen Tools und legt `.agents/skills/` nicht an. Stattdessen
+  spiegeln und committen (Blatt BMad-Vorlagen, Abschnitt 12, Handgriff 2). Der
+  Lint-Ignore deckt `.agents/skills/**` schon ab:
+
+  ```bash
+  mkdir -p .agents && cp -R .claude/skills .agents/
+  npm run lint
+  git add .agents eslint.config.mjs
+  git commit -m "chore: mirror skills to .agents/skills"
+  git status --short   # leer
+  ```
+
+  Copilot in VS Code zusätzlich nach `.github/skills/` (ebenfalls im Lint-Ignore):
+  `mkdir -p .github/skills && cp -R .agents/skills/bmad-* .github/skills/`, dann
+  `git add .github/skills/bmad-*` und committen. Nach jedem BMad-Update neu spiegeln.
 - Persönliche Einstellungen sind nicht im Repo. Ohne sie begrüßt BMad mit "BMad" und
   antwortet auf Englisch. Eigene Datei anlegen (ist gitignored):
 
@@ -60,6 +77,9 @@ Dann `/bmad-testarch-atdd` mit der Spec als Story-Datei, drei Zeilen in die Spec
   ```bash
   git remote add upstream https://github.com/dinooo13/habit-tracker-demo.git
   git fetch upstream
-  git push origin 'refs/remotes/upstream/bmad/*:refs/heads/bmad/*'
+  git push origin 'refs/remotes/upstream/bmad/*:refs/heads/bmad/*' \
+    'refs/remotes/upstream/kurs/*:refs/heads/kurs/*' \
+    'refs/remotes/upstream/stufe/*:refs/heads/stufe/*'
   git fetch origin
+  git branch -r | grep -c 'origin/bmad/'   # 6
   ```
