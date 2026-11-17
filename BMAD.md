@@ -13,24 +13,26 @@ Alles aus `bmad/05-verify-hooks`, dazu drei Commits:
    (`when`: nur bei `.ts`, `.vue`, `.mjs`). Den Spec-Abgleich macht der eingebaute
    `acceptance-auditor`; eine eigene Ebene mit derselben `id` würde ihn samt `when`
    ersetzen. Neu gegenüber dem Testlauf (nicht mit Agent getestet): eine Team-Regel
-   `persistent_facts`, dass akzeptierte ADRs nie editiert werden (Blatt Ü6, Schritt 4).
+   `persistent_facts`, dass ADRs vom Hauptzweig nie editiert werden (Blatt Ü6, Schritt 4).
    Prüfen: `uv run --no-cache _bmad/scripts/resolve_customization.py --skill
    "$PWD/.claude/skills/bmad-code-review" -p "$PWD" --key workflow.review_layers`.
 2. `fix(gh-1): apply code review patches`: Ergebnis von `/bmad-code-review <spec>` mit
    allen sieben Ebenen, Triage 2 decision, 2 patch, 1 defer, 13 verworfen. Patches:
    `updateHabit` behält die Kategorie (mit Test), Badge im E2E-Test geprüft. Entscheidungen
    und Verworfenes stehen in der Spec unter "Review Findings", der Defer-Punkt in
-   `deferred-work.md`. Im Testlauf hat der Agent dabei das akzeptierte ADR 0025 editiert
-   (verboten laut `AGENTS.md`); diese Änderung ist hier bewusst nicht übernommen.
+   `deferred-work.md`. Im Testlauf hat das Review dabei ADR 0025 geändert, das Build
+   Minuten vorher selbst als "Accepted" angelegt hatte (`AGENTS.md` verbietet Edits an
+   akzeptierten ADRs); diese Änderung ist hier bewusst nicht übernommen.
 3. Guard für die riskante Datei (Schema), Blatt Guard-Vorlage: `.claude/hooks/file-guard.sh`
    auf `SubagentStop` und `Stop`, neben `gates-on-stop.sh`. Weicht `app/types/app-data.ts`
    oder `app/utils/persistence/` von `HEAD` ab, egal mit welchem Werkzeug geändert, laufen
    die Schema-Tests (`npx vitest run --project unit storage-schema schema-migrations
    pause-mode`, ca. 2 s). Grün: `systemMessage`, rot: `{"decision": "block"}` mit den
    letzten 30 Zeilen, sonst still. Dazu im `.githooks/pre-commit` der ADR-Schutz
-   (Blatt Ü6, Schritt 4): Ein Commit, der ein bestehendes ADR in `docs/adr/` ändert oder
-   löscht, bricht ab (`pre-commit FAIL adr`); bewusste Änderung mit `ADR_OK=1`, ein neues
-   ADR geht durch. Die Schema-Tests laufen im `pre-commit` ohnehin mit (`npm test`).
+   (Blatt Ü6, Schritt 4): Ein Commit, der ein ADR ändert oder löscht, das es schon auf
+   dem Hauptzweig gibt (`git merge-base HEAD origin/HEAD`, also `main`, `master` oder
+   `develop`), bricht ab (`pre-commit FAIL adr`); bewusste Änderung mit `ADR_OK=1`. Ein
+   neues ADR und ein ADR, das erst auf diesem Branch entstand (hier 0025), gehen durch. Die Schema-Tests laufen im `pre-commit` ohnehin mit (`npm test`).
 
 ## Von hier weitermachen (Ü7)
 

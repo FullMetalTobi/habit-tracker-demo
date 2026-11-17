@@ -12,11 +12,23 @@ if [ -z "$ALLOW_SKIP" ] && git diff --cached -U0 -- tests e2e \
   echo "$(date +%T) pre-commit FAIL skip" >> "$log"; exit 1
 fi
 
-# Guard (Ü6): accepted ADRs stay as they are; a new decision is a new ADR.
+# Guard (Ü6): ADRs that exist on the main branch stay as they are; a new
+# decision is a new ADR. An ADR added on this branch (not merged) may change.
 # Deliberate change (e.g. status "Superseded by"): ADR_OK=1 git commit ...
-if [ -z "$ADR_OK" ] && git diff --cached --name-only --diff-filter=MD \
-  | grep -E '^docs/adr/[0-9]{4}-' >&2; then
-  echo "pre-commit: accepted ADR changed (see above). Write a new ADR." >&2
+# Main branch: origin/HEAD (main, master or develop), else origin/main.
+# Missing origin/HEAD: git remote set-head origin --auto
+main="$ADR_MAIN"
+[ -n "$main" ] || main="$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null)" \
+  || main=origin/main
+base="$(git merge-base HEAD "$main" 2>/dev/null)" || { base=HEAD; main=HEAD; }
+bad=""
+for f in $(git diff --cached --name-only --no-renames --diff-filter=MD \
+  -- 'docs/adr/[0-9][0-9][0-9][0-9]-*'); do
+  git cat-file -e "$base:$f" 2>/dev/null && bad="$bad $f"
+done
+if [ -z "$ADR_OK" ] && [ -n "$bad" ]; then
+  echo "pre-commit: ADR from $main changed:$bad" >&2
+  echo "pre-commit: write a new ADR instead (or ADR_OK=1, deliberately)" >&2
   echo "$(date +%T) pre-commit FAIL adr" >> "$log"; exit 1
 fi
 
