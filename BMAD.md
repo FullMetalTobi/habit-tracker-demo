@@ -31,7 +31,9 @@ git config core.hooksPath .githooks
 ```
 
 Dann der Epic-Pfad: `/bmad-spec` für Issue #3 und #4 (oder ein eigenes Epic), ein Build
-pro Story.
+pro Story (Blatt BMad-Vorlagen, Abschnitt 16). Zum Vergleich danach: `bmad/epic-beispiel`
+enthält `SPEC.md`, `.memlog.md` und `stories.yaml` aus einem echten Lauf, ohne offene
+Fragen (`git show origin/bmad/epic-beispiel:BMAD.md`).
 
 ## Allgemein
 
