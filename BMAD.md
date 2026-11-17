@@ -1,44 +1,39 @@
-# BMad-Stand: Ü2 erledigt (`bmad/02-installiert`)
+# BMad-Stand: Ü3 erledigt (`bmad/03-spec-bereit`)
 
-Musterlösung für Übung 2 im Seminar "Spec-Driven Development mit der BMad Method"
+Musterlösung für Übung 3 im Seminar "Spec-Driven Development mit der BMad Method"
 (Weg B). Issue #1: Kategorien für Habits mit Filter.
 
 ## Was dieser Stand enthält
 
-- BMad 6.12.4 (44 Skills in `.claude/skills/`, Konfiguration in `_bmad/`), installiert mit
+Alles aus `bmad/02-installiert`, dazu:
 
-  ```bash
-  npx -y bmad-method@6.12.4 install --directory . --modules bmm,tea,bmb \
-    --tools claude-code --yes --user-name Seminar \
-    --communication-language German --document-output-language German
-  ```
-- `eslint.config.mjs`: ignoriert `.claude/skills/**` und `_bmad/**`. Ohne das bricht
-  `npm run lint` nach der TEA-Installation (373 Fehler in einer TEA-Hook-Datei).
-- `.gitignore`: persönliche Install-Antworten (`_bmad/config.user.toml`,
-  `_bmad/core/config.yaml`, `_bmad/bmm/config.yaml`). `_bmad/tea/config.yaml` und
-  `_bmad/bmb/config.yaml` bleiben im Repo, weil alle TEA- und BMB-Skills sie lesen.
-  `_bmad/custom/*.user.toml` ignoriert BMad selbst.
-- `AGENTS.md`: Gates, Architektur, harte Regeln, ADRs.
-- `_bmad/custom/bmad-build.toml`: Team-Regeln für `bmad-build` (immer volle Spec und
-  Halt an CHECKPOINT 1, Freigabe nach BMad mit "Approve and stop", Test zuerst).
-  Prüfen, was ankommt:
+- Brainstorming (`/bmad-brainstorming`, Partner-Modus, 15 Minuten, zwei Techniken:
+  Morphological Analysis und Worst Possible Idea), abgelegt, wie BMad es vorsieht:
+  `_bmad-output/brainstorming/brainstorm-habit-categories-filter-2026-11-17/`
+  mit `brainstorm-intent.md` (Richtung, 5 Entscheidungen und Risiken, Test-Hinweise)
+  und dem Protokoll `.memlog.md`.
+- Die Spec `_bmad-output/implementation-artifacts/spec-gh-1-habit-categories-filter.md`
+  aus `/bmad-build` bis CHECKPOINT 1, Status `ready-for-dev`. Antworten auf die beiden
+  Open Questions: "1: A, feste Liste (Health, Learning, Work). 2: A, Leerzustand mit
+  Reset-Button." Freigabe mit "Approve and stop". Die Person, die den Build gestartet hat,
+  hat die Spec allein committet: `docs(spec): ready-for-dev gh-1-habit-categories-filter`.
 
-  ```bash
-  uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-build \
-    --project-root . --key workflow.persistent_facts
-  ```
+Hinweis: Die Spec stammt aus einem Lauf, der das Issue ohne den Brainstorm-Intent bekam.
+Mit dem Intent als Input wurde die Spec im Test deutlich länger (Schema v3, pflegbare
+Liste); die beiden Antworten oben halten den Umfang klein. Genau das lohnt sich zu
+vergleichen: Was aus dem Brainstorming nehmt ihr in die Spec, was bewusst nicht?
 
-## Von hier weitermachen (Ü3)
+## Von hier weitermachen (Ü4)
 
 ```bash
 git fetch origin
-git switch --no-track -c bmad-ab-ue3 origin/bmad/02-installiert
+git switch --no-track -c bmad-ab-ue4 origin/bmad/03-spec-bereit
 npm ci
 ```
 
-Dann `/bmad-brainstorming` zu Issue #1 und `/bmad-build` bis CHECKPOINT 1.
-Andere Werkzeuge (Codex, Cursor, Copilot): BMad dort selbst installieren
-(`--tools <tool>`), dieser Stand enthält nur die Claude-Code-Skills.
+Dann `/bmad-testarch-atdd` mit der Spec als Story-Datei, drei Zeilen in die Spec
+(Code Map, Task "unskip, rot sehen", Verification-Befehl), frische Session
+`/bmad-build <spec>`.
 
 ## Allgemein
 
