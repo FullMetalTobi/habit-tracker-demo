@@ -32,7 +32,10 @@ Implement the approved spec: **$ARGUMENTS**
 For each task in the spec, in order:
 
 1. **Red.** Write or extend a test that describes the task's behavior and run it.
-   It must fail for the right reason. Unit tests go to `tests/` (rendered
+   It must fail for the right reason. **Hard rule: no production code for a task
+   before you have seen its test fail.** Show the command and the failing
+   assertion in your reply before you implement. If a task has no testable
+   behavior (an ADR, docs, config), say so explicitly: `No test: <reason>`. Unit tests go to `tests/` (rendered
    components under `tests/nuxt/`), user flows go to `e2e/specs/`.
 2. **Green.** Write the smallest change that makes the test pass. Follow the
    surrounding patterns: `<script setup>`, Pinia stores with `hydrate`/`snapshot`,
@@ -42,7 +45,8 @@ For each task in the spec, in order:
 4. **Commit.** One small commit per task in Conventional Commits format:
    `feat(categories): add category field to habit schema`,
    `test(e2e): cover category filter after reload`, `fix: …`, `docs(adr): …`.
-   The message says what and why. Never commit a red state.
+   The message says what and why. Add a body line `Red: <test name>` for the
+   test you saw fail first (or `Red: none - <reason>`). Never commit a red state.
 
 Update the spec's task list as you go (`- [x]`) so a new session can resume.
 
