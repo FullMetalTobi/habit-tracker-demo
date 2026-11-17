@@ -106,3 +106,26 @@ Gewählt: additives Feld statt V3, Präzedenz `settings.lastExportedAt` (Zod `.d
 - `npx vitest run tests/habit-categories.test.ts && PORT=3110 E2E_PORT=3110 npx playwright test e2e/specs/habit-categories.spec.ts` -- expected: grün, 0 skipped
 - `npm run lint && npm run typecheck && npm test` -- expected: grün
 - `PORT=3110 E2E_PORT=3110 npm run test:e2e` -- expected: grün
+
+### Review Findings
+
+Code Review 2026-11-17 (Layer: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Standards/ADR, Security, Lint). Lint, typecheck und `npm test` (452 Tests) laufen grün; e2e nicht neu ausgeführt.
+
+- [x] [Review][Decision] (gelöst: A, strikt lassen wie die anderen Enums; Begründung hier, ADR-0025 bleibt unverändert) Strikter Enum bei unbekanntem Kategorie-Key — Geprüft: `parseAppData` wirft, `loadAppDataSafely` fällt auf leeren Zustand, Autosave ist dann pausiert (`loadFailed`) und die Payload bleibt in Quarantäne (ADR-0019), also kein stiller Datenverlust, aber die App startet leer mit Recovery-Banner. Optionen: (1) strikt lassen, im ADR-0025 dokumentieren (wie andere Enums); (2) `.catch(null)` auch im strikten Pfad, dann wird ein unbekannter Key still zu „keine Kategorie“. Severity low–medium. [app/utils/persistence/storage-schema.ts:70] (blind-hunter+edge-case-hunter+acceptance-auditor+security)
+- [x] [Review][Decision] (gelöst: global lassen, kein Code) Pausen-Hinweis auf Today ignoriert den Kategorie-Filter — Mit `?category=work` zählt „N habits are paused“ auch Habits anderer Kategorien. Entweder global lassen (Hinweis erklärt die leere Queue) oder ebenfalls filtern. Severity low. [app/pages/app/index.vue:121] (acceptance-auditor)
+- [x] [Review][Patch] (angewendet, Test ergänzt) `updateHabit` löscht die Kategorie, wenn `category` fehlt — `input.category ?? null` überschreibt; `HabitUpdateInput` erlaubt das Weglassen. Fix: `input.category !== undefined ? input.category : habit.category`. Severity low (latent, einziger Aufrufer übergibt das Feld). [app/stores/habits.ts:81] (blind-hunter+edge-case-hunter+acceptance-auditor+security)
+- [x] [Review][Patch] (angewendet) Kategorie-Badge in der Habit-Liste ohne Test — Entfernen des `UBadge` lässt alle Tests grün. Fix: im e2e-Test „filter survives a reload…“ prüfen, dass die Karte „Inbox zero“ „Work“ enthält. Severity low. [app/pages/app/habits/index.vue:198] (verification-gap)
+- [x] [Review][Defer] Today-Text „have been reviewed“ unter Filter nicht getestet — deferred: nur Textvariante, Hauptzweig (AC-3) ist abgedeckt; e2e mit komplett bearbeitetem Tag ergänzen. [app/pages/app/index.vue:657] (verification-gap)
+
+#### Rejected
+
+- `migrateToV2` weicht von Spec („unverändert“) ab — Fix wäre ein Spec-Edit; Änderung ist durch das Pflichtfeld nötig und im ADR-0025 dokumentiert.
+- „All X habits are done“ bei missed/skipped — low; Wortlaut ist per Matrix und AC-3-Test festgelegt.
+- Leerzustand „no X habits yet“ bei nur archivierten Habits — low, Fix braucht eine neue Verzweigung.
+- Query mit Groß-/Kleinschreibung oder Leerzeichen gilt als unbekannt — Spec-Entscheidung (Unbekannt → Leerzustand + Reset).
+- `CategoryFilter` zeigt bei unbekanntem Key keine Auswahl — low; der Leerzustand bietet „Reset filter“.
+- Today-Fortschritt zählt nur gefilterte Habits — false; „x of N reviewed“ bezieht sich bewusst auf die sichtbare Liste.
+- ADR behauptet, ältere Builds strippen das Feld — false; Zod strippt unbekannte Felder, nur ein ungültiger Wert eines bekannten Feldes schlägt fehl (siehe Decision 1).
+- Demo-Daten ohne Kategorie, Page-Objects statt Roh-Locators, Back-Button/Datumsnavigation ungetestet, Sprache der Artefakte, Lücken der Review-Konfiguration, hartcodierte Label-Liste — low/kosmetisch, Fix überproportional oder Prozess/Config statt Code.
+- AC-5 / Red-first-Nachweis nicht im Diff sichtbar — nicht aus dem Diff beweisbar; Gates lokal bestätigt (lint, typecheck, unit grün).
+- Standards/ADR: keine Verstöße. Lint: keine Findings.

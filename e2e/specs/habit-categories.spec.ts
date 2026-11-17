@@ -128,6 +128,7 @@ test.describe('Habit categories & filter (GH-1, ATDD)', () => {
     }))
     await page.goto('/app/habits?category=work')
     await expect(page.locator('.habit-card').filter({ hasText: 'Inbox zero' })).toBeVisible()
+    await expect(page.locator('.habit-card').filter({ hasText: 'Inbox zero' })).toContainText('Work')
     await expect(page.locator('.habit-card').filter({ hasText: 'Morning run' })).toHaveCount(0)
 
     await page.reload()

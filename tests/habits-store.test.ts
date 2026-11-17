@@ -72,6 +72,13 @@ describe('habits store — createHabit', () => {
     expect(store.updateHabit(habit.id, { ...input, category: null })?.category).toBeNull()
   })
 
+  it('updateHabit keeps the category when the field is omitted', () => {
+    const store = useHabitsStore()
+    const habit = store.createHabit(buildCreateInput({ category: 'health' }))
+    const input = { ...buildCreateInput(), archived: false }
+    expect(store.updateHabit(habit.id, input)?.category).toBe('health')
+  })
+
   it('deduplicates and sorts scheduleWeekdays', () => {
     const store = useHabitsStore()
     const habit = store.createHabit(buildCreateInput({ scheduleWeekdays: [3, 1, 3, 1, 0] }))

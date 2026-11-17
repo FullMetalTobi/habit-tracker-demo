@@ -78,7 +78,9 @@ export const useHabitsStore = defineStore('habits', {
       habit.startDate = input.startDate
       habit.archived = input.archived
       habit.pauses = normalizePauses(input.pauses)
-      habit.category = input.category ?? null
+      if (input.category !== undefined) {
+        habit.category = input.category
+      }
       habit.updatedAt = nowIso()
 
       return habit
