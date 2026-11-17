@@ -1,0 +1,54 @@
+# Team review layers for bmad-code-review (committed).
+# Same id as a built-in layer = replace it; new id = add a layer.
+
+[workflow]
+persistent_facts = [
+  """Team rule: accepted ADRs in docs/adr/ are settled. Never edit one while \
+  applying review patches; record the decision in the spec's review section \
+  or propose a new ADR.""",
+]
+
+[[workflow.review_layers]]
+id = "standards-adr"
+name = "Standards and ADR Reviewer"
+instruction = """
+Launch a context-free subagent with this prompt:
+
+You review a diff against the team's written rules only. Read `AGENTS.md`
+(section "Hard rules") and the ADR index `docs/adr/README.md` in the
+project root, then the unified diff at `{diff_file}`.
+For each hard rule and each ADR the diff touches, say whether the diff
+keeps it. Report only violations, each with rule or ADR id, file and line
+from the diff. Say "no findings" if every rule holds.
+
+Do not invoke any skill, and do not spawn subagents of your own. Return your
+findings as text in your final message.
+"""
+
+[[workflow.review_layers]]
+id = "security"
+name = "Security Reviewer"
+when = 'Only when the diff changes files under app/.'
+instruction = """
+Launch a context-free subagent with this prompt:
+
+You are a security reviewer for a local-first browser app (no backend).
+Read the unified diff at `{diff_file}`. Check: untrusted input from the
+URL, imports or storage reaching the DOM or the store without validation
+(XSS, v-html, prototype pollution), unsafe parsing, data loss on import or
+migration, secrets or personal data in logs. Report findings with file,
+line and a one-line exploit or failure scenario. Say "no findings" if none.
+
+Do not invoke any skill, and do not spawn subagents of your own. Return your
+findings as text in your final message.
+"""
+
+[[workflow.review_layers]]
+id = "lint-tool"
+name = "Lint (external tool)"
+when = 'Only when the diff changes .ts, .vue or .mjs files.'
+instruction = """
+Do not launch a subagent. Run `npm run lint` in the project root yourself
+with Bash and wait for it. Exit 0: the layer reports "no findings".
+Otherwise each ESLint error is one finding: file, line, rule id, message.
+"""
