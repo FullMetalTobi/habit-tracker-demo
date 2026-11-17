@@ -3,9 +3,8 @@
 
 [workflow]
 persistent_facts = [
-  """Team rule: accepted ADRs in docs/adr/ are settled. Never edit one while \
-  applying review patches; record the decision in the spec's review section \
-  or propose a new ADR.""",
+  """Team rule: never edit an accepted ADR in docs/adr/. If a finding needs \
+  a changed decision, propose a new ADR and ask the human.""",
 ]
 
 [[workflow.review_layers]]
