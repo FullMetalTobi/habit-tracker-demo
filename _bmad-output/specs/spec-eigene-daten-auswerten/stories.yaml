@@ -1,0 +1,16 @@
+- id: "1"
+  title: CSV-Export der Check-ins in den Einstellungen
+  description: >-
+    Umsetzung von CAP-1 bis CAP-3 aus SPEC.md (Issue #3): Button in den Einstellungen, CSV-Erzeugung mit Escaping, Leerzustand.
+    Unit-Tests für die CSV-Erzeugung, E2E-Test für den Download.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: ""
+- id: "2"
+  title: Heatmap im GitHub-Stil pro Habit
+  description: >-
+    Umsetzung von CAP-4 bis CAP-7 aus SPEC.md (Issue #4): Heatmap der letzten 12 Monate auf /app/habits/[id] mit sechs Status,
+    Wochenbeginn aus den Settings, Tastatur und Screenreader, Hell/Dunkel und Mobile.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: ""

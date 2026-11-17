@@ -1,85 +1,81 @@
-# BMad-Stand: Ü7 erledigt (`bmad/07-retro`)
+# BMad-Stand: Epic-Pfad, Beispiel (`bmad/epic-beispiel`)
 
-Musterlösung für Übung 7 im Seminar "Spec-Driven Development mit der BMad Method"
-(Weg B). Issue #1: Kategorien für Habits mit Filter. Endstand der Kette.
+Beispiel für die Hausaufgabe im Seminar "Spec-Driven Development mit der BMad Method"
+(Blatt BMad-Vorlagen, Abschnitt 16). Epic "Eigene Daten auswerten" aus Issue #3
+(CSV-Export) und Issue #4 (Heatmap). Aufgebaut auf `bmad/07-retro`.
 
 ## Was dieser Stand enthält
 
-Alles aus `bmad/06-review`, dazu:
+Alles aus `bmad/07-retro`, dazu ein Commit mit dem Ordner
+`_bmad-output/specs/spec-eigene-daten-auswerten/`:
 
-- `_bmad-output/implementation-artifacts/gh-1-retro-2026-11-17.md`: `/bmad-retrospective -H`
-  auf der einen Spec, ohne Epic und ohne `sprint-status.yaml`. Verdict
-  `accepted-with-open-items`, Befunde mit Quelle (Architektur-Delta, Duplikation,
-  Größenwachstum, Pattern-Abweichung, Spec-zu-Umsetzung), Aktionspunkte nur vorgeschlagen.
-  Der Kopf des Dokuments erklärt, was gegenüber der Ausgabe im Testlauf angepasst ist.
-- `_bmad-output/implementation-artifacts/deferred-work.md`: was Build und Code Review
-  geparkt haben. Retro-Aktion 3 ist umgesetzt (der Enum-Punkt ist als geklärt markiert),
-  der Defer-Punkt aus dem Review ist offen.
+- `SPEC.md`: der Epic-Kern mit 7 Capabilities (CAP-1 bis CAP-3 CSV, CAP-4 bis CAP-7
+  Heatmap), je `intent` und `success`, dazu Constraints, Lieferung, Non-goals, Success
+  signal, Annahmen. **Kein Abschnitt `## Open Questions`**: alle acht Fragen sind
+  beantwortet. Von `bmad-spec` aus `.memlog.md` abgeleitet, nicht von Hand geändert.
+- `.memlog.md`: das Protokoll, aus dem `SPEC.md` entsteht, eine Zeile pro Entscheidung,
+  Annahme, Frage oder Prüfung. Ehrlich drin gelassen: ein Event "neu gerendert", das
+  zu früh geschrieben wurde, und die Korrektur direkt darunter (so lief es).
+- `stories.yaml`: zwei Stories, `"1"` CSV-Export (CAP-1 bis CAP-3), `"2"` Heatmap
+  (CAP-4 bis CAP-7), beide `spec_checkpoint: true`, `done_checkpoint: true`,
+  `invoke_dev_with: ""`.
 
-Nicht im Repo: der Team-Plan aus Ü7 (gehört in euer eigenes Repo bzw. Wiki) und ein
-Draft-MR. `bmad-build` pusht nie; den MR legt ihr selbst an (`gh pr create --draft`
-bzw. `glab mr create --draft`). `bmad-sprint-planning` braucht Epics und lehnt ein
-einzelnes Ticket ab (Gate FAIL).
+Noch nicht enthalten: die Story-Dateien und der Code. Die entstehen erst mit einem Build
+pro Story.
 
-## Von hier weitermachen (Hausaufgabe)
+## Wie es entstand
+
+Claude Code 2.1.326, `claude -p` mit `--model sonnet`, eine Session, vier Aufrufe
+(der erste mit `/bmad-spec`, danach `--resume`). Persönliche Datei mit
+`communication_language = "German"` (nicht im Repo).
+
+| Aufruf | Was | Agentenzeit | Kosten kumuliert |
+|---|---|---|---|
+| 1 | `/bmad-spec Epic "Eigene Daten auswerten" aus Issue #3 und #4`, Text beider Issues, Slug, "Interaktiver Modus: Ich bin der Mensch im Chat" | 52 s | 0,27 USD |
+| 2 | acht Antworten auf die offenen Fragen, Annahmen bestätigt | 33 s | 0,38 USD |
+| 3 | `break this into stories`: Vorschlag 4 Stories oder 2, Frage nach den drei Feldern | 11 s | 0,42 USD |
+| 4 | "Die 2er-Variante … beide spec_checkpoint true, done_checkpoint true, invoke_dev_with leer" | 11 s | 0,48 USD |
+
+Zusammen **knapp 2 Minuten Agentenzeit und 0,48 USD** (`total_cost_usd` ist bei
+`--resume` kumuliert, der letzte Wert zählt). Ohne den Satz "Interaktiver Modus" hält
+sich `bmad-spec` bei `claude -p` für headless (kein TTY) und überspringt laut
+`SKILL.md` den Story Breakdown.
+
+Die offenen Fragen aus Aufruf 1, damit ihr eure eigenen Antworten vergleichen könnt:
+CSV-Spalten, Trennzeichen (Excel mit deutscher Locale), Formelinjektion, "offen" vs.
+"verpasst" in der Heatmap, Tage vor `startDate` und archivierte Habits, Muster für
+Pause, Mobile mit 53 Wochen, getrennt lieferbar ja oder nein.
+
+## Ansehen
 
 ```bash
 git fetch origin
-git switch --no-track -c seminar/ende origin/bmad/07-retro
+S=_bmad-output/specs/spec-eigene-daten-auswerten
+git show origin/bmad/epic-beispiel:$S/SPEC.md
+git show origin/bmad/epic-beispiel:$S/stories.yaml
+git show origin/bmad/epic-beispiel:$S/.memlog.md
+```
+
+## Von hier weitermachen (nicht getestet)
+
+```bash
+git switch --no-track -c seminar/epic origin/bmad/epic-beispiel
 npm ci
 git config core.hooksPath .githooks
 ```
 
-Dann der Epic-Pfad: `/bmad-spec` für Issue #3 und #4 (oder ein eigenes Epic), ein Build
-pro Story (Blatt BMad-Vorlagen, Abschnitt 16). Zum Vergleich danach: `bmad/epic-beispiel`
-enthält `SPEC.md`, `.memlog.md` und `stories.yaml` aus einem echten Lauf, ohne offene
-Fragen (`git show origin/bmad/epic-beispiel:BMAD.md`).
+Dann pro Story eine frische Session, z. B.
+`/bmad-build _bmad-output/specs/spec-eigene-daten-auswerten/ Story 1`. Build schreibt die
+Story-Datei unter `stories/` und hält mit dem Team-Override am CHECKPOINT 1. Weiter wie
+in Ü3 bis Ü6, dann Story 2, am Ende `bmad-retrospective` mit dem Spec-Ordner.
 
 ## Allgemein
 
 - Kette: `bmad/02-installiert` → `03-spec-bereit` → `04-build` → `05-verify-hooks` →
-  `06-review` → `07-retro`, jeweils auf dem vorherigen Branch aufgebaut. Was dazukam:
-  `git diff origin/bmad/<vorher> origin/bmad/<dieser> --stat`.
-- BMad Method 6.12.4 mit den Modulen `bmm`, `tea` (Test Architect 1.27.2) und `bmb`
-  (BMad Builder 2.2.2), installiert für Claude Code (`.claude/skills/`).
-- Codex, Cursor, Copilot: Die Skills liegen nur unter `.claude/skills/`. **Nicht neu
-  installieren**: `--tools codex --yes` macht auf einem Stand mit `_bmad/` nur ein
-  Quick-Update der vorhandenen Tools und legt `.agents/skills/` nicht an. Stattdessen
-  spiegeln und committen (Blatt BMad-Vorlagen, Abschnitt 12, Handgriff 2). Der
-  Lint-Ignore deckt `.agents/skills/**` schon ab:
-
-  ```bash
-  mkdir -p .agents && cp -R .claude/skills .agents/
-  npm run lint
-  git add .agents eslint.config.mjs
-  git commit -m "chore: mirror skills to .agents/skills"
-  git status --short   # leer
-  ```
-
-  Copilot in VS Code zusätzlich nach `.github/skills/` (ebenfalls im Lint-Ignore):
-  `mkdir -p .github/skills && cp -R .agents/skills/bmad-* .github/skills/`, dann
-  `git add .github/skills/bmad-*` und committen. Nach jedem BMad-Update neu spiegeln.
-- Persönliche Einstellungen sind nicht im Repo. Ohne sie begrüßt BMad mit "BMad" und
-  antwortet auf Englisch. Eigene Datei anlegen (ist gitignored):
-
-  ```toml
-  # _bmad/custom/config.user.toml
-  [core]
-  user_name = "Dein Name"
-  communication_language = "German"
-  ```
-
+  `06-review` → `07-retro` → `epic-beispiel`. Was dazukam:
+  `git diff origin/bmad/07-retro origin/bmad/epic-beispiel --stat`.
+- BMad Method 6.12.4 mit `bmm`, `tea` (1.27.2) und `bmb` (2.2.2), Skills unter
+  `.claude/skills/`. Codex, Cursor, Copilot: spiegeln wie in `bmad/07-retro` beschrieben
+  (Blatt BMad-Vorlagen, Abschnitt 12, Handgriff 2).
 - Node 22 (`.nvmrc`), `uv` für die BMad-Skripte. Gates: `npm run lint`,
   `npm run typecheck`, `npm test`, `PORT=3110 E2E_PORT=3110 npm run test:e2e`. Nie Port 3000.
-- Fork ohne diese Branches (geforkt mit "Copy the main branch only"): einmal in den
-  Fork schieben, danach funktionieren alle Befehle mit `origin/`.
-
-  ```bash
-  git remote add upstream https://github.com/dinooo13/habit-tracker-demo.git
-  git fetch upstream
-  git push origin 'refs/remotes/upstream/bmad/*:refs/heads/bmad/*' \
-    'refs/remotes/upstream/kurs/*:refs/heads/kurs/*' \
-    'refs/remotes/upstream/stufe/*:refs/heads/stufe/*'
-  git fetch origin
-  git branch -r | grep -c 'origin/bmad/'   # 7
-  ```
