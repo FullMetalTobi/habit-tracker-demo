@@ -1,37 +1,52 @@
-# BMad-Stand: Ü4 erledigt (`bmad/04-build`)
+# BMad-Stand: Ü5 erledigt (`bmad/05-verify-hooks`)
 
-Musterlösung für Übung 4 im Seminar "Spec-Driven Development mit der BMad Method"
+Musterlösung für Übung 5 im Seminar "Spec-Driven Development mit der BMad Method"
 (Weg B). Issue #1: Kategorien für Habits mit Filter.
 
 ## Was dieser Stand enthält
 
-Alles aus `bmad/03-spec-bereit`, dazu zwei Commits:
+Alles aus `bmad/04-build`, dazu:
 
-1. `test(gh-1): ATDD scaffolds (TEA)`: `/bmad-testarch-atdd` (Murat) auf der Spec.
-   Ein Unit-Test in `tests/habit-categories.test.ts` und drei E2E-Tests in
-   `e2e/specs/habit-categories.spec.ts`, alle als `skip` geparkt; Checkliste mit
-   AC-Register in `_bmad-output/test-artifacts/`. TEA 1.27.2 empfiehlt danach
-   `dev-story`; der Weg zu `bmad-build` sind drei Zeilen, die der Mensch in die nicht
-   eingefrorenen Abschnitte der Spec schreibt (Code Map, erster Task "`.skip` entfernen,
-   rot sehen, dann grün", Verification-Befehl mit "0 skipped").
-2. `feat(gh-1): …`: der Commit von `/bmad-build <spec>` in einer frischen Session.
-   ATDD-Tests ohne `skip` und grün, Feature, neues ADR 0025, Spec mit Status `done`,
-   `baseline_commit` und Review Triage Log, `deferred-work.md` mit einem geparkten Punkt.
-   Ehrlich laut Build: Nur der Unit-Test wurde vorab rot gesehen, die E2E-Tests wurden erst
-   nach dem Code aktiviert.
+- `.githooks/pre-commit`, das Gate für jeden Commit, egal ob Mensch oder Agent, egal
+  welches Werkzeug: kein neu hinzugefügtes `test.skip`/`.only` in `tests/` und `e2e/`,
+  dann `npm run lint` und `npm test` (etwa 10 bis 20 s). Ausnahme für den einen Commit
+  mit den ATDD-Scaffolds: `ALLOW_SKIP=1 git commit …`. Einschalten pro Clone:
 
-Gates auf diesem Stand: Lint, Typecheck, Unit-Tests, E2E-Tests grün.
+  ```bash
+  git config core.hooksPath .githooks
+  ```
 
-## Von hier weitermachen (Ü5)
+- `.claude/settings.json` mit `.claude/hooks/stop-lint.sh` auf `SubagentStop` und `Stop`
+  (braucht `jq`): Lint am Ende jedes Subagenten und jedes Turns, blockt einmal, wenn Lint
+  rot ist. Nicht auf `PostToolUse` mit `Edit|Write`: Der Implementierungs-Subagent von
+  `bmad-build` schreibt Dateien per Bash, so ein Hook feuerte im Test kein einziges Mal.
+- `.claude/skills/team-verify/`: eigener Skill, gebaut mit `/bmad-workflow-builder -H`
+  (BMB). Führt die Befehle unter `## Verification` der Spec aus, belegt jedes Kriterium mit
+  einem bestandenen Test und schreibt ein Verdict. Anpassbar über
+  `_bmad/custom/team-verify.toml`. Aufruf: `/team-verify <spec>`.
+- Sein Bericht `_bmad-output/implementation-artifacts/spec-gh-1-habit-categories-filter.verification.md`:
+  alle Befehle grün, AC-1 bis AC-5 `pass`, **Verdict FAIL**, weil die Matrix-Zeile
+  "Zusammenführen → `AppDataConflict`" keinen namentlich belegten Test hat.
+- Bonus: `/bmad-testarch-trace` Phase 1,
+  `_bmad-output/test-artifacts/traceability/traceability-matrix-gh-1.md`.
+
+Hinweis: Bericht und Matrix stammen aus dem Testlauf, der sie erst nach den Review-Patches
+aus Ü6 erzeugt hat. Deshalb nennen sie 453 Unit-Tests; auf diesem Stand sind es 452.
+
+Hooks in Codex, Cursor oder Copilot heißen anders und sind hier nicht eingerichtet; der
+Git-Hook gilt für alle.
+
+## Von hier weitermachen (Ü6)
 
 ```bash
 git fetch origin
-git switch --no-track -c bmad-ab-ue5 origin/bmad/04-build
+git switch --no-track -c bmad-ab-ue6 origin/bmad/05-verify-hooks
 npm ci
+git config core.hooksPath .githooks
 ```
 
-Dann Test-Hooks einrichten (Git-`pre-commit`, Claude-Code-Hook auf `SubagentStop`/`Stop`)
-und mit `/bmad-workflow-builder` den Skill `team-verify` bauen.
+Dann eigene Review-Ebenen für `bmad-code-review` (`/bmad-customize` oder
+`_bmad/custom/bmad-code-review.toml`), ein Review-Durchgang, Triage.
 
 ## Allgemein
 
