@@ -3,15 +3,6 @@
 #   git config core.hooksPath .githooks
 log="$(git rev-parse --git-dir)/hook.log"
 echo "$(date +%T) pre-commit start" >> "$log"
-staged=$(git diff --cached --name-only --diff-filter=ACMR)
-
-# Guard: a schema change needs a new ADR in the same commit (AGENTS.md)
-if echo "$staged" | grep -qE '^app/(types/app-data\.ts|utils/persistence/)'; then
-  if ! git diff --cached --name-only --diff-filter=A | grep -q '^docs/adr/0'; then
-    echo "pre-commit: schema change without a new ADR in docs/adr/" >&2
-    echo "$(date +%T) pre-commit FAIL adr" >> "$log"; exit 1
-  fi
-fi
 
 # Guard: no newly added skipped or focused tests (ATDD scaffolds: set
 # ALLOW_SKIP=1 once, when committing them before the build)
@@ -19,6 +10,14 @@ if [ -z "$ALLOW_SKIP" ] && git diff --cached -U0 -- tests e2e \
   | grep -nE '^\+.*\b(test|it|describe)\.(skip|only)\(' >&2; then
   echo "pre-commit: new test.skip/.only in staged tests (see lines above)" >&2
   echo "$(date +%T) pre-commit FAIL skip" >> "$log"; exit 1
+fi
+
+# Guard (Ü6): accepted ADRs stay as they are; a new decision is a new ADR.
+# Deliberate change (e.g. status "Superseded by"): ADR_OK=1 git commit ...
+if [ -z "$ADR_OK" ] && git diff --cached --name-only --diff-filter=MD \
+  | grep -E '^docs/adr/[0-9]{4}-' >&2; then
+  echo "pre-commit: accepted ADR changed (see above). Write a new ADR." >&2
+  echo "$(date +%T) pre-commit FAIL adr" >> "$log"; exit 1
 fi
 
 # Gate: lint and unit tests (~20 s)
