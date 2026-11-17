@@ -89,5 +89,5 @@ Dann `/bmad-retrospective` kurz auf der Spec, Team-Plan, Bonus Draft-MR.
     'refs/remotes/upstream/kurs/*:refs/heads/kurs/*' \
     'refs/remotes/upstream/stufe/*:refs/heads/stufe/*'
   git fetch origin
-  git branch -r | grep -c 'origin/bmad/'   # 6
+  git branch -r | grep -c 'origin/bmad/'   # 7
   ```
