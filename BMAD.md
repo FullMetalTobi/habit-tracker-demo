@@ -1,52 +1,43 @@
-# BMad-Stand: Ü5 erledigt (`bmad/05-verify-hooks`)
+# BMad-Stand: Ü6 erledigt (`bmad/06-review`)
 
-Musterlösung für Übung 5 im Seminar "Spec-Driven Development mit der BMad Method"
+Musterlösung für Übung 6 im Seminar "Spec-Driven Development mit der BMad Method"
 (Weg B). Issue #1: Kategorien für Habits mit Filter.
 
 ## Was dieser Stand enthält
 
-Alles aus `bmad/04-build`, dazu:
+Alles aus `bmad/05-verify-hooks`, dazu drei Commits:
 
-- `.githooks/pre-commit`, das Gate für jeden Commit, egal ob Mensch oder Agent, egal
-  welches Werkzeug: kein neu hinzugefügtes `test.skip`/`.only` in `tests/` und `e2e/`,
-  dann `npm run lint` und `npm test` (etwa 10 bis 20 s). Ausnahme für den einen Commit
-  mit den ATDD-Scaffolds: `ALLOW_SKIP=1 git commit …`. Einschalten pro Clone:
+1. `_bmad/custom/bmad-code-review.toml`: drei eigene Review-Ebenen
+   (`[[workflow.review_layers]]`): Standards/ADR (liest `AGENTS.md` und den ADR-Index),
+   Security (`when`: nur bei Änderungen unter `app/`), Lint als externes Werkzeug per Bash
+   (`when`: nur bei `.ts`, `.vue`, `.mjs`). Den Spec-Abgleich macht der eingebaute
+   `acceptance-auditor`; eine eigene Ebene mit derselben `id` würde ihn samt `when`
+   ersetzen. Neu gegenüber dem Testlauf (nicht mit Agent getestet): eine Team-Regel
+   `persistent_facts`, dass akzeptierte ADRs beim Patchen nicht editiert werden.
+   Prüfen: `uv run _bmad/scripts/resolve_customization.py --skill
+   .claude/skills/bmad-code-review --project-root . --key workflow.review_layers`.
+2. `fix(gh-1): apply code review patches`: Ergebnis von `/bmad-code-review <spec>` mit
+   allen sieben Ebenen, Triage 2 decision, 2 patch, 1 defer, 13 verworfen. Patches:
+   `updateHabit` behält die Kategorie (mit Test), Badge im E2E-Test geprüft. Entscheidungen
+   und Verworfenes stehen in der Spec unter "Review Findings", der Defer-Punkt in
+   `deferred-work.md`. Im Testlauf hat der Agent dabei das akzeptierte ADR 0025 editiert
+   (verboten laut `AGENTS.md`); diese Änderung ist hier bewusst nicht übernommen.
+3. Guard für die riskante Datei (Schema): `.claude/hooks/schema-guard.sh` auf
+   `SubagentStop` und `Stop` startet die Schema-Tests, sobald `app/types/app-data.ts` oder
+   `app/utils/persistence/` geändert sind, egal mit welchem Werkzeug. `.githooks/pre-commit`
+   lehnt eine Schema-Änderung ohne neues ADR im selben Commit ab. Grenze: Auch ein kleiner
+   Fix am Schema braucht dann ein neues ADR.
 
-  ```bash
-  git config core.hooksPath .githooks
-  ```
-
-- `.claude/settings.json` mit `.claude/hooks/stop-lint.sh` auf `SubagentStop` und `Stop`
-  (braucht `jq`): Lint am Ende jedes Subagenten und jedes Turns, blockt einmal, wenn Lint
-  rot ist. Nicht auf `PostToolUse` mit `Edit|Write`: Der Implementierungs-Subagent von
-  `bmad-build` schreibt Dateien per Bash, so ein Hook feuerte im Test kein einziges Mal.
-- `.claude/skills/team-verify/`: eigener Skill, gebaut mit `/bmad-workflow-builder -H`
-  (BMB). Führt die Befehle unter `## Verification` der Spec aus, belegt jedes Kriterium mit
-  einem bestandenen Test und schreibt ein Verdict. Anpassbar über
-  `_bmad/custom/team-verify.toml`. Aufruf: `/team-verify <spec>`.
-- Sein Bericht `_bmad-output/implementation-artifacts/spec-gh-1-habit-categories-filter.verification.md`:
-  alle Befehle grün, AC-1 bis AC-5 `pass`, **Verdict FAIL**, weil die Matrix-Zeile
-  "Zusammenführen → `AppDataConflict`" keinen namentlich belegten Test hat.
-- Bonus: `/bmad-testarch-trace` Phase 1,
-  `_bmad-output/test-artifacts/traceability/traceability-matrix-gh-1.md`.
-
-Hinweis: Bericht und Matrix stammen aus dem Testlauf, der sie erst nach den Review-Patches
-aus Ü6 erzeugt hat. Deshalb nennen sie 453 Unit-Tests; auf diesem Stand sind es 452.
-
-Hooks in Codex, Cursor oder Copilot heißen anders und sind hier nicht eingerichtet; der
-Git-Hook gilt für alle.
-
-## Von hier weitermachen (Ü6)
+## Von hier weitermachen (Ü7)
 
 ```bash
 git fetch origin
-git switch --no-track -c bmad-ab-ue6 origin/bmad/05-verify-hooks
+git switch --no-track -c bmad-ab-ue7 origin/bmad/06-review
 npm ci
 git config core.hooksPath .githooks
 ```
 
-Dann eigene Review-Ebenen für `bmad-code-review` (`/bmad-customize` oder
-`_bmad/custom/bmad-code-review.toml`), ein Review-Durchgang, Triage.
+Dann `/bmad-retrospective` kurz auf der Spec, Team-Plan, Bonus Draft-MR.
 
 ## Allgemein
 
