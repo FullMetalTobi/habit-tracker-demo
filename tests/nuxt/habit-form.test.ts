@@ -26,6 +26,7 @@ function buildInitialHabit(overrides: Partial<Habit> = {}): Habit {
     startDate: '2026-02-08',
     archived: false,
     pauses: [],
+    category: null,
     createdAt: '2026-02-08T00:00:00.000Z',
     updatedAt: '2026-02-08T00:00:00.000Z',
     ...overrides,
@@ -56,5 +57,36 @@ describe('HabitForm — weekday validation', () => {
       color: 'warning',
     })
     expect(wrapper.emitted('submit')).toBeUndefined()
+  })
+})
+
+describe('HabitForm — category', () => {
+  afterEach(() => {
+    toastAdd.mockReset()
+  })
+
+  async function submit(initial: Habit) {
+    const wrapper = await mountSuspended(HabitForm, { props: { initial } })
+    await wrapper.find('form').trigger('submit')
+    await wrapper.vm.$nextTick()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    return wrapper
+  }
+
+  it('emits the initial category key on submit', async () => {
+    const wrapper = await submit(buildInitialHabit({ scheduleWeekdays: [1], category: 'learning' }))
+    const payload = wrapper.emitted('submit')?.[0]?.[0] as { category: string | null }
+    expect(payload.category).toBe('learning')
+  })
+
+  it('emits null when no category is set', async () => {
+    const wrapper = await submit(buildInitialHabit({ scheduleWeekdays: [1] }))
+    const payload = wrapper.emitted('submit')?.[0]?.[0] as { category: string | null }
+    expect(payload.category).toBeNull()
+  })
+
+  it('renders a Category field', async () => {
+    const wrapper = await mountSuspended(HabitForm, { props: { initial: buildInitialHabit() } })
+    expect(wrapper.text()).toContain('Category')
   })
 })

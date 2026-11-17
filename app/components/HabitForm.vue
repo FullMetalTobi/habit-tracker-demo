@@ -2,7 +2,8 @@
 import { Time } from '@internationalized/date'
 import type { FormSubmitEvent, RadioGroupItem } from '@nuxt/ui'
 import { z } from 'zod'
-import type { Habit, HabitPause, HabitType } from '~/types/app-data'
+import type { Habit, HabitCategory, HabitPause, HabitType } from '~/types/app-data'
+import { CATEGORY_OPTIONS, isCategoryKey } from '~/utils/domain/categories'
 import { compareDateKeys, formatTimeString, isValidDateKey, MAX_DATE_KEY, MIN_DATE_KEY, parseTimeString, todayDateKey } from '~/utils/domain/date'
 import { orderedWeekdayOptions } from '~/utils/domain/weekdays'
 
@@ -15,6 +16,7 @@ interface HabitFormPayload {
   startDate: string
   archived: boolean
   pauses: HabitPause[]
+  category: HabitCategory | null
 }
 
 const props = withDefaults(
@@ -51,6 +53,15 @@ const state = reactive<Schema & { archived: boolean }>({
   startDate: props.initial?.startDate ?? todayDateKey(),
   archived: props.initial?.archived ?? false,
 })
+
+// Category select. Reka's select cannot hold an empty-string item value, so
+// "no category" is a sentinel that maps back to null on submit (ADR-0025).
+const NO_CATEGORY = 'none'
+const categoryItems = [
+  { value: NO_CATEGORY, label: 'No category' },
+  ...CATEGORY_OPTIONS.map(option => ({ value: option.value as string, label: option.label })),
+]
+const categoryValue = ref<string>(props.initial?.category ?? NO_CATEGORY)
 
 const settingsStore = useSettingsStore()
 
@@ -174,6 +185,7 @@ function onSubmit(event: FormSubmitEvent<Schema>) {
     scheduleWeekdays: weekdays,
     reminderTime: timeToString(reminderTime.value),
     pauses: cleanedPauses,
+    category: isCategoryKey(categoryValue.value) ? categoryValue.value : null,
   })
 }
 </script>
@@ -207,6 +219,19 @@ function onSubmit(event: FormSubmitEvent<Schema>) {
         :items="typeOptions"
         value-key="value"
         variant="table"
+      />
+    </UFormField>
+
+    <UFormField
+      label="Category"
+      name="category"
+      help="Optional. Use it to filter your habits."
+    >
+      <USelect
+        v-model="categoryValue"
+        :items="categoryItems"
+        value-key="value"
+        class="w-full"
       />
     </UFormField>
 

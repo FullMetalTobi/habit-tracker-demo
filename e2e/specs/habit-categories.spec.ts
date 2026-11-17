@@ -27,7 +27,7 @@ function withCategory(habit: Habit, category: string | null): Habit {
 }
 
 test.describe('Habit categories & filter (GH-1, ATDD)', () => {
-  test.skip('[P0] AC-1 a category assigned in the form survives a reload', async ({ authedPage: page }) => {
+  test('[P0] AC-1 a category assigned in the form survives a reload', async ({ authedPage: page }) => {
     await expect(
       (async () => {
         const form = new HabitFormPage(page)
@@ -58,7 +58,7 @@ test.describe('Habit categories & filter (GH-1, ATDD)', () => {
     ).resolves.toBeUndefined()
   })
 
-  test.skip('[P0] AC-2 a freshly opened /app?category=X link shows only that category', async ({ authedPage: page, seed }) => {
+  test('[P0] AC-2 a freshly opened /app?category=X link shows only that category', async ({ authedPage: page, seed }) => {
     await expect(
       (async () => {
         const run = withCategory(makeHabit({ name: 'Morning run' }), 'health')
@@ -76,7 +76,7 @@ test.describe('Habit categories & filter (GH-1, ATDD)', () => {
     ).resolves.toBeUndefined()
   })
 
-  test.skip('[P0] AC-3 no "all done" message while other categories are still open', async ({ authedPage: page, seed }) => {
+  test('[P0] AC-3 no "all done" message while other categories are still open', async ({ authedPage: page, seed }) => {
     await expect(
       (async () => {
         const run = withCategory(makeHabit({ name: 'Morning run' }), 'health')
@@ -91,9 +91,78 @@ test.describe('Habit categories & filter (GH-1, ATDD)', () => {
 
         // Every due Health habit is done, Work is still open: offer the reset, and
         // never claim that everything due today has been reviewed.
+        await expect(page.getByText('All Health habits are done.')).toBeVisible()
         await expect(page.getByRole('button', { name: 'Reset filter' })).toBeVisible()
         await expect(page.getByText('Everything due today has already been reviewed.')).toHaveCount(0)
       })(),
     ).resolves.toBeUndefined()
+  })
+
+  test('unknown ?category=foo shows the empty filter state and Reset filter clears the URL', async ({ authedPage: page, seed }) => {
+    await seed(makeAppData({ habits: [withCategory(makeHabit({ name: 'Morning run' }), 'health')] }))
+    await page.goto('/app?category=foo')
+
+    await expect(page.getByText('No habits in this category')).toBeVisible()
+    await expect(page.locator('.queue-card')).toHaveCount(0)
+    await page.getByRole('button', { name: 'Reset filter' }).click()
+
+    await expect(page).not.toHaveURL(/category=/)
+    await expect(new DashboardPage(page).card('Morning run')).toBeVisible()
+  })
+
+  test('a known category with nothing due shows its own message, not "all done"', async ({ authedPage: page, seed }) => {
+    await seed(makeAppData({ habits: [withCategory(makeHabit({ name: 'Morning run' }), 'health')] }))
+    await page.goto('/app?category=learning')
+
+    await expect(page.getByText('No Learning habits due today')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Reset filter' })).toBeVisible()
+    await expect(page.getByText('Everything due today has already been reviewed.')).toHaveCount(0)
+  })
+
+  test('the filter survives a reload and filters the habit list', async ({ authedPage: page, seed }) => {
+    await seed(makeAppData({
+      habits: [
+        withCategory(makeHabit({ name: 'Morning run' }), 'health'),
+        withCategory(makeHabit({ name: 'Inbox zero' }), 'work'),
+      ],
+    }))
+    await page.goto('/app/habits?category=work')
+    await expect(page.locator('.habit-card').filter({ hasText: 'Inbox zero' })).toBeVisible()
+    await expect(page.locator('.habit-card').filter({ hasText: 'Morning run' })).toHaveCount(0)
+
+    await page.reload()
+    await expect(page.locator('.habit-card').filter({ hasText: 'Inbox zero' })).toBeVisible()
+    await expect(page.locator('.habit-card').filter({ hasText: 'Morning run' })).toHaveCount(0)
+  })
+
+  test('picking a category in the filter select writes the URL, "All categories" clears it', async ({ authedPage: page, seed }) => {
+    await seed(makeAppData({
+      habits: [
+        withCategory(makeHabit({ name: 'Morning run' }), 'health'),
+        withCategory(makeHabit({ name: 'Inbox zero' }), 'work'),
+      ],
+    }))
+    await page.goto('/app/habits')
+
+    await page.getByLabel('Filter by category').click()
+    await page.getByRole('option', { name: 'Work' }).click()
+    await expect(page).toHaveURL(/category=work/)
+    await expect(page.locator('.habit-card').filter({ hasText: 'Inbox zero' })).toBeVisible()
+    await expect(page.locator('.habit-card').filter({ hasText: 'Morning run' })).toHaveCount(0)
+
+    await page.getByLabel('Filter by category').click()
+    await page.getByRole('option', { name: 'All categories' }).click()
+    await expect(page).not.toHaveURL(/category=/)
+    await expect(page.locator('.habit-card').filter({ hasText: 'Morning run' })).toBeVisible()
+  })
+
+  test('habit list shows the category empty state with a working Reset filter', async ({ authedPage: page, seed }) => {
+    await seed(makeAppData({ habits: [withCategory(makeHabit({ name: 'Morning run' }), 'health')] }))
+    await page.goto('/app/habits?category=learning')
+
+    await expect(page.getByText('No habits in this category')).toBeVisible()
+    await page.getByRole('button', { name: 'Reset filter' }).click()
+    await expect(page).not.toHaveURL(/category=/)
+    await expect(page.locator('.habit-card').filter({ hasText: 'Morning run' })).toBeVisible()
   })
 })

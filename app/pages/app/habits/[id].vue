@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { HabitPause, HabitType } from '~/types/app-data'
+import type { HabitCategory, HabitPause, HabitType } from '~/types/app-data'
 
 definePageMeta({ layout: 'app' })
 
@@ -21,6 +21,7 @@ function onSubmit(payload: {
   startDate: string
   archived: boolean
   pauses: HabitPause[]
+  category: HabitCategory | null
 }) {
   const updated = habitsStore.updateHabit(habitId.value, {
     name: payload.name,
@@ -31,6 +32,7 @@ function onSubmit(payload: {
     startDate: payload.startDate,
     archived: payload.archived,
     pauses: payload.pauses,
+    category: payload.category,
   })
 
   if (!updated) {

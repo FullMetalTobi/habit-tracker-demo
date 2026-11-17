@@ -5,6 +5,10 @@ export type HabitStatus = 'done' | 'missed' | 'skipped'
 export const PRIMARY_COLOR_OPTIONS = ['sky', 'emerald', 'violet', 'rose', 'amber'] as const
 export type PrimaryColor = (typeof PRIMARY_COLOR_OPTIONS)[number]
 
+// Fixed habit categories (ADR-0025). The key is persisted; `null` means no category.
+export const HABIT_CATEGORY_KEYS = ['health', 'learning', 'work'] as const
+export type HabitCategory = (typeof HABIT_CATEGORY_KEYS)[number]
+
 export const MISS_REASON_CODES = [
   'forgot',
   'no_time',
@@ -70,6 +74,7 @@ export interface Habit {
   startDate: string
   archived: boolean
   pauses: HabitPause[]
+  category: HabitCategory | null
   createdAt: string
   updatedAt: string
 }
@@ -139,6 +144,7 @@ export interface HabitCreateInput {
   reminderTime: string | null
   startDate: string
   pauses?: HabitPause[]
+  category?: HabitCategory | null
 }
 
 export interface HabitUpdateInput extends HabitCreateInput {

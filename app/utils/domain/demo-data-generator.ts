@@ -265,6 +265,7 @@ export function generateDemoData(today = new Date()): AppData {
       startDate: dateToKey(habitStart),
       archived: false,
       pauses: pausesByHabit[def.id] ?? [],
+      category: null,
       createdAt: dateToIso(shiftDays(habitStart, -2), timeStr),
       updatedAt: dateToIso(endDate, timeStr),
     }

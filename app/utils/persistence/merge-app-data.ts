@@ -81,6 +81,7 @@ function habitsEqualIgnoringId(a: Habit, b: Habit): boolean {
     && a.archived === b.archived
     && a.pauses.length === b.pauses.length
     && a.pauses.every((pause, index) => pause.start === b.pauses[index]?.start && pause.end === b.pauses[index]?.end)
+    && a.category === b.category
     && a.createdAt === b.createdAt
     && a.updatedAt === b.updatedAt
   )

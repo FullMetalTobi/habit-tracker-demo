@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Habit, HabitType } from '~/types/app-data'
+import { categoryLabel, filterByCategory, isCategoryKey } from '~/utils/domain/categories'
 import { isDateInHabitPause } from '~/utils/domain/date'
 import { sortWeekdaysForDisplay, WEEKDAY_LABELS } from '~/utils/domain/weekdays'
 
@@ -20,8 +21,11 @@ const showArchived = ref(false)
 const page = ref(1)
 const itemsPerPage = 6
 
+// Category filter lives in the URL only (ADR-0025).
+const categoryFilter = useCategoryFilter()
+
 const filteredHabits = computed(() =>
-  habitsStore.habits
+  filterByCategory(habitsStore.habits, categoryFilter.filter.value)
     .filter(habit => (showArchived.value ? true : !habit.archived))
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)),
 )
@@ -52,6 +56,10 @@ const habitTypeMeta: Record<HabitType, { label: string, color: 'primary' | 'warn
     badgeVariant: 'soft',
   },
 }
+
+watch(categoryFilter.filter, () => {
+  page.value = 1
+})
 
 watch(total, (value) => {
   const maxPage = Math.max(1, Math.ceil(value / itemsPerPage))
@@ -104,7 +112,11 @@ function typeMeta(type: HabitType): { label: string, color: 'primary' | 'warning
           </div>
         </template>
 
-        <div class="space-y-2">
+        <div class="space-y-3">
+          <CategoryFilter
+            :model-value="categoryFilter.filter.value"
+            @update:model-value="categoryFilter.setFilter"
+          />
           <UCheckbox
             v-model="showArchived"
             label="Show archived habits"
@@ -121,7 +133,15 @@ function typeMeta(type: HabitType): { label: string, color: 'primary' | 'warning
       </p>
 
       <UEmpty
-        v-if="!total"
+        v-if="!total && categoryFilter.filter.value !== null"
+        icon="i-lucide-filter"
+        title="No habits in this category"
+        :description="isCategoryKey(categoryFilter.filter.value) ? `You have no ${categoryFilter.label.value} habits yet.` : 'This category does not exist.'"
+        :actions="[{ label: 'Reset filter', icon: 'i-lucide-filter-x', color: 'neutral', variant: 'outline', onClick: () => categoryFilter.reset() }]"
+      />
+
+      <UEmpty
+        v-else-if="!total"
         icon="i-lucide-list-checks"
         title="No habits yet"
         description="Create your first habit and start collecting identity votes."
@@ -177,6 +197,14 @@ function typeMeta(type: HabitType): { label: string, color: 'primary' | 'warning
                 variant="outline"
               >
                 Reminder: {{ habit.reminderTime ?? 'none' }}
+              </UBadge>
+              <UBadge
+                v-if="habit.category"
+                color="neutral"
+                variant="soft"
+                icon="i-lucide-tag"
+              >
+                {{ categoryLabel(habit.category) }}
               </UBadge>
               <UBadge
                 :color="habit.archived ? 'warning' : 'success'"

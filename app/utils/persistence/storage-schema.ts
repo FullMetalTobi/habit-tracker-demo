@@ -4,6 +4,7 @@ import {
   COLLECTION_LIMITS,
   DEFAULT_SETTINGS,
   FIELD_LIMITS,
+  HABIT_CATEGORY_KEYS,
   MISS_REASON_CODES,
   PRIMARY_COLOR_OPTIONS,
   type AppDataV2,
@@ -64,6 +65,9 @@ const HabitV1Schema = z.object({
 
 const HabitSchema = HabitV1Schema.extend({
   pauses: z.array(HabitPauseSchema).max(COLLECTION_LIMITS.pausesPerHabit),
+  // Additive optional field (ADR-0025): data written before categories existed
+  // parses to null, so no schemaVersion bump or migration is needed.
+  category: z.enum(HABIT_CATEGORY_KEYS).nullable().default(null),
 })
 
 // ── Lenient habit import schema (issue #69) ──────────────────────────────────
@@ -105,6 +109,7 @@ const LenientHabitImportSchema = z.object({
   startDate: dateKeySchema.catch(() => todayDateKey()),
   archived: z.boolean().catch(false),
   pauses: z.array(HabitPauseSchema).max(COLLECTION_LIMITS.pausesPerHabit).catch([]),
+  category: z.enum(HABIT_CATEGORY_KEYS).nullable().catch(null),
   createdAt: z.string().min(1).max(FIELD_LIMITS.timestamp).catch(() => nowIso()),
   updatedAt: z.string().min(1).max(FIELD_LIMITS.timestamp).catch(() => nowIso()),
 }) satisfies z.ZodType<Habit>
@@ -201,7 +206,7 @@ type AppDataV1Parsed = z.output<typeof AppDataV1Schema>
 export function migrateToV2(v1: AppDataV1Parsed): AppDataV2 {
   return {
     schemaVersion: APP_DATA_SCHEMA_VERSION,
-    habits: v1.habits.map(habit => ({ ...habit, pauses: [] })),
+    habits: v1.habits.map(habit => ({ ...habit, pauses: [], category: null })),
     entries: v1.entries,
     suggestions: v1.suggestions,
     settings: v1.settings,

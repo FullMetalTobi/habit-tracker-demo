@@ -2,7 +2,8 @@
 title: 'Kategorien für Habits mit Filter (GitHub #1)'
 type: 'feature'
 created: '2026-11-17'
-status: 'ready-for-dev'
+status: 'done'
+baseline_commit: '365e464298e07a751b479ac09ed6cbc8f3f787e5'
 route: 'dispatch'
 review_loop_iteration: 0
 context:
@@ -60,14 +61,14 @@ Schema-Änderung nur mit neuem ADR (0025); alte Daten und alte Backups müssen l
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `tests/habit-categories.test.ts`, `e2e/specs/habit-categories.spec.ts` -- vor dem Code, den jeder Test abdeckt: `.skip` entfernen, Test laufen lassen und rot sehen; danach grün machen. Assertions nicht abschwächen -- ATDD (TEA)
-- [ ] `tests/…` + `app/types/app-data.ts`, `storage-schema.ts` -- `category` additiv in strict + lenient Schema; Test: Altdaten/V1/Backup ohne Feld laden mit `null` -- Rückwärtskompatibilität
-- [ ] `merge-app-data.ts`, `stores/habits.ts` -- Feld mergen/speichern -- Konsistenz
-- [ ] `app/utils/domain/categories.ts` -- Filterlogik inkl. Unit-Tests der Matrix-Fälle
-- [ ] `HabitForm.vue`, `new.vue`, `[id].vue` -- Kategorie wählbar/leerbar; Nuxt-Test
-- [ ] `pages/app/index.vue`, `pages/app/habits/index.vue` -- URL-gebundener Filter, ehrliche Leerzustände mit Reset
-- [ ] `e2e/specs/` -- Zuordnung überlebt Reload; Filter in URL überlebt Reload und Direktaufruf; Leerzustand + Reset
-- [ ] `docs/adr/0025-…md`, `README.md`, `docs/architecture.md` -- ADR: additives optionales Feld ohne Versionsbump
+- [x] `tests/habit-categories.test.ts`, `e2e/specs/habit-categories.spec.ts` -- vor dem Code, den jeder Test abdeckt: `.skip` entfernen, Test laufen lassen und rot sehen; danach grün machen. Assertions nicht abschwächen -- ATDD (TEA)
+- [x] `tests/…` + `app/types/app-data.ts`, `storage-schema.ts` -- `category` additiv in strict + lenient Schema; Test: Altdaten/V1/Backup ohne Feld laden mit `null` -- Rückwärtskompatibilität
+- [x] `merge-app-data.ts`, `stores/habits.ts` -- Feld mergen/speichern -- Konsistenz
+- [x] `app/utils/domain/categories.ts` -- Filterlogik inkl. Unit-Tests der Matrix-Fälle
+- [x] `HabitForm.vue`, `new.vue`, `[id].vue` -- Kategorie wählbar/leerbar; Nuxt-Test
+- [x] `pages/app/index.vue`, `pages/app/habits/index.vue` -- URL-gebundener Filter, ehrliche Leerzustände mit Reset
+- [x] `e2e/specs/` -- Zuordnung überlebt Reload; Filter in URL überlebt Reload und Direktaufruf; Leerzustand + Reset
+- [x] `docs/adr/0025-…md`, `README.md`, `docs/architecture.md` -- ADR: additives optionales Feld ohne Versionsbump
 
 **Acceptance Criteria:**
 - Given ein Habit mit Kategorie, when die Seite neu geladen wird, then bleibt die Zuordnung erhalten.
@@ -81,6 +82,19 @@ Schema-Änderung nur mit neuem ADR (0025); alte Daten und alte Backups müssen l
 ## Spec Change Log
 
 ## Review Triage Log
+
+| Finding | Verdict | Route | Evidence |
+|---|---|---|---|
+| Filter-Select (CategoryFilter/setFilter) ohne Interaktionstest | medium | patch | Nur URL-Direktaufruf und Reset getestet; e2e „picking a category…“ ergänzt (grün). |
+| „All X habits are done“ nicht asserted (Matrix-Zeile „nichts offen“) | medium | patch | AC-3 prüft jetzt den Text; grün. |
+| Habit-Liste: Leerzustand + Reset ungetestet | low | patch | e2e ergänzt, trivial. |
+| HabitForm seedet `categoryValue` einmalig (async initial) | false | – | `[id].vue` rendert HabitForm nur unter `v-if="habit"`; initial ist beim Mount da. |
+| `updateHabit` löscht Kategorie bei fehlendem Feld | low | reject | Einziger Aufrufer übergibt `category`; Fix wäre zusätzlicher Guard. |
+| Leerzustand nennt „are done“ bei missed/skipped | low | reject | Wortlaut folgt der Matrix („erledigt“). |
+| Nur-archivierte Habits: „no X habits yet“ | low | reject | kosmetisch, Fix braucht neue Verzweigung. |
+| Strikter Enum bei unbekanntem Key (Downgrade) → Fallback leer | medium (unverifiziert) | defer | Entspricht dem Verhalten anderer Enums; würde bei Rollback nach künftigem Key greifen. |
+| `migrateToV2` geändert, Spec sagt „unverändert“ | low | reject | Nur Typ-Pflichtfeld; Fix wäre Spec-Edit. |
+| Case-/Whitespace-Query, Back-Button, Demo-Daten ohne Kategorie, A11y-Texte, Duplikate | low/false | reject | Unbekannter Wert → Leerzustand ist entschieden; Rest kosmetisch. |
 
 ## Design Notes
 

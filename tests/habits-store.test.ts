@@ -58,6 +58,20 @@ describe('habits store — createHabit', () => {
     expect(habit.identityStatement).toBe('I run.')
   })
 
+  it('stores the category key, defaulting to null', () => {
+    const store = useHabitsStore()
+    expect(store.createHabit(buildCreateInput()).category).toBeNull()
+    expect(store.createHabit(buildCreateInput({ category: 'learning' })).category).toBe('learning')
+  })
+
+  it('updateHabit sets and clears the category', () => {
+    const store = useHabitsStore()
+    const habit = store.createHabit(buildCreateInput())
+    const input = { ...buildCreateInput(), archived: false }
+    expect(store.updateHabit(habit.id, { ...input, category: 'work' })?.category).toBe('work')
+    expect(store.updateHabit(habit.id, { ...input, category: null })?.category).toBeNull()
+  })
+
   it('deduplicates and sorts scheduleWeekdays', () => {
     const store = useHabitsStore()
     const habit = store.createHabit(buildCreateInput({ scheduleWeekdays: [3, 1, 3, 1, 0] }))

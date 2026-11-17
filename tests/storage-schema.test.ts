@@ -350,6 +350,7 @@ describe('parseLenientHabit (#69)', () => {
     startDate: '2026-02-01',
     archived: true,
     pauses: [{ start: '2026-03-01', end: '2026-03-02' }],
+    category: 'health',
     createdAt: '2026-02-01T00:00:00.000Z',
     updatedAt: '2026-02-02T00:00:00.000Z',
   }

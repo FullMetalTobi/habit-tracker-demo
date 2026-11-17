@@ -99,6 +99,19 @@ describe('mergeAppData (#67)', () => {
       expect(result.conflicts[0]).toMatchObject({ kind: 'habit', key: 'h1', cause: 'both-modified' })
     })
 
+    it('conflicts when two tabs set a different category on the same habit', () => {
+      const base = appData({ habits: [habit('h1')] })
+      const ours = appData({ habits: [habit('h1', { category: 'health' })] })
+      const theirs = appData({ habits: [habit('h1', { category: 'work' })] })
+
+      const result = mergeAppData(base, ours, theirs)
+      expect(result.status).toBe('conflict')
+      if (result.status !== 'conflict') {
+        return
+      }
+      expect(result.conflicts[0]).toMatchObject({ kind: 'habit', key: 'h1', cause: 'both-modified' })
+    })
+
     it('is not a conflict when both sides converge on the same value', () => {
       const base = appData({ habits: [habit('h1')] })
       const ours = appData({ habits: [habit('h1', { name: 'Same' })] })

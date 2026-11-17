@@ -11,6 +11,7 @@ import {
   isDateInHabitPause,
   relativeDayLabel,
 } from '~/utils/domain/date'
+import { filterModelsByCategory, isCategoryKey } from '~/utils/domain/categories'
 import * as stats from '~/utils/domain/stats'
 
 definePageMeta({ layout: 'app' })
@@ -121,12 +122,43 @@ const pausedHabitsForDate = computed(() =>
   habitsStore.activeHabits.filter(habit => isDateInHabitPause(habit, dateKey.value)),
 )
 
-const dueHabitModels = computed(() =>
+// Category filter lives in the URL only (ADR-0025).
+const categoryFilter = useCategoryFilter()
+
+const allDueHabitModels = computed(() =>
   dueHabits.value.map(habit => ({
     habit,
     entry: entriesStore.entryByHabitAndDate(habit.id, dateKey.value),
   })),
 )
+
+const dueHabitModels = computed(() =>
+  filterModelsByCategory(allDueHabitModels.value, categoryFilter.filter.value),
+)
+
+// True while habits of other categories are still unreviewed, so a filtered
+// "nothing open" state must not claim that everything due today is reviewed.
+const otherCategoriesOpen = computed(() =>
+  categoryFilter.filter.value !== null
+  && allDueHabitModels.value.some(model => !model.entry),
+)
+
+const filterIsUnknown = computed(
+  () => categoryFilter.filter.value !== null && !isCategoryKey(categoryFilter.filter.value),
+)
+
+const emptyFilterTitle = computed(() => {
+  if (filterIsUnknown.value) {
+    return 'No habits in this category'
+  }
+  return isToday.value
+    ? `No ${categoryFilter.label.value} habits due today`
+    : `No ${categoryFilter.label.value} habits were due`
+})
+
+const resetFilterAction = computed(() => [
+  { label: 'Reset filter', icon: 'i-lucide-filter-x', color: 'neutral' as const, variant: 'outline' as const, onClick: () => categoryFilter.reset() },
+])
 
 const doneCount = computed(
   () => dueHabitModels.value.filter(model => model.entry?.status === 'done').length,
@@ -507,8 +539,23 @@ function reopenHabit(habitId: string): void {
           </div>
         </template>
 
+        <div class="mb-4">
+          <CategoryFilter
+            :model-value="categoryFilter.filter.value"
+            @update:model-value="categoryFilter.setFilter"
+          />
+        </div>
+
         <UEmpty
-          v-if="!dueHabitModels.length"
+          v-if="categoryFilter.filter.value !== null && !dueHabitModels.length"
+          icon="i-lucide-filter"
+          :title="emptyFilterTitle"
+          :description="filterIsUnknown ? 'This category does not exist.' : 'Reset the filter to see all habits due.'"
+          :actions="resetFilterAction"
+        />
+
+        <UEmpty
+          v-else-if="!dueHabitModels.length"
           icon="i-lucide-calendar-check-2"
           :title="isToday ? 'No habits due today' : 'No habits were due'"
           :description="isToday ? 'Create a habit or adjust schedule weekdays.' : 'Nothing was scheduled on this day.'"
@@ -603,7 +650,15 @@ function reopenHabit(habitId: string): void {
           <template #open>
             <div class="mt-4 space-y-2">
               <UAlert
-                v-if="!openHabits.length"
+                v-if="!openHabits.length && categoryFilter.filter.value !== null"
+                color="success"
+                variant="subtle"
+                title="No open habits"
+                :description="otherCategoriesOpen ? `All ${categoryFilter.label.value} habits are done.` : `All ${categoryFilter.label.value} habits have been reviewed.`"
+                :actions="resetFilterAction"
+              />
+              <UAlert
+                v-else-if="!openHabits.length"
                 color="success"
                 variant="subtle"
                 title="No open habits"

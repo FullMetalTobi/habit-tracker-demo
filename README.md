@@ -105,6 +105,8 @@ and coaching flows.
   `parseAppDataResult`, a discriminated `ok | migrated | unrecoverable` result; older `AppDataV1`
   payloads migrate up via a version-keyed registry's one-way `migrateToV2` step, and corrupt or
   unrecognised data falls back to an empty state rather than crashing (ADR-0022).
+- **Habit categories.** Habits carry an optional fixed `category` (`health`, `learning`, `work`).
+  Today and the habit list filter through `?category=<key>` in the URL (ADR-0025).
 - **Legacy migration.** A previous `localStorage` payload is migrated into IndexedDB on first
   load, then cleaned up.
 - **Single device.** Data does not sync across devices or browsers — use **JSON export/import**
@@ -136,6 +138,7 @@ Significant decisions are recorded as ADRs in [`docs/adr/`](docs/adr/):
 - [ADR-0020: Production deployment smoke tests with build-SHA stamping](docs/adr/0020-production-smoke-tests-with-build-sha-stamping.md)
 - [ADR-0022: Version-keyed schema-migration registry with a discriminated parse result](docs/adr/0022-version-keyed-schema-migration-registry.md)
 - [ADR-0024: Revision-guarded saves with deterministic cross-tab merge](docs/adr/0024-revision-guarded-saves-with-cross-tab-merge.md)
+- [ADR-0025: Additive optional habit category field without a schema version bump](docs/adr/0025-additive-optional-habit-category-field.md)
 
 ## Contributing & workflow
 

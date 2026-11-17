@@ -216,6 +216,11 @@ Two cross-cutting, client-only flows guard the local-first model:
   precached but held; `usePwaUpdate()` (wrapping `$pwa.needRefresh`) drives a reload banner in
   the app layout and applies the waiting worker only on user confirmation.
 
+- **Habit category filter.** `Habit.category` is an optional fixed key (`health`/`learning`/`work`,
+  else `null`), added without a schema bump ([ADR-0025](adr/0025-additive-optional-habit-category-field.md)).
+  Today and the habit list read `?category=<key>` via `useCategoryFilter()` and filter with the pure
+  helpers in `app/utils/domain/categories.ts`; the filter is never stored.
+
 Both, plus auth and import/export/delete actions, emit structured events into the in-memory
 security log (`app/utils/observability/security-log.ts`, SEC-16) — a bounded ring buffer with a console sink,
 no network and no persistence.
