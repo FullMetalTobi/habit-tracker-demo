@@ -3,6 +3,15 @@
 #   git config core.hooksPath .githooks
 log="$(git rev-parse --git-dir)/hook.log"
 echo "$(date +%T) pre-commit start" >> "$log"
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+
+# Guard: a schema change needs a new ADR in the same commit (AGENTS.md)
+if echo "$staged" | grep -qE '^app/(types/app-data\.ts|utils/persistence/)'; then
+  if ! git diff --cached --name-only --diff-filter=A | grep -q '^docs/adr/0'; then
+    echo "pre-commit: schema change without a new ADR in docs/adr/" >&2
+    echo "$(date +%T) pre-commit FAIL adr" >> "$log"; exit 1
+  fi
+fi
 
 # Guard: no newly added skipped or focused tests (ATDD scaffolds: set
 # ALLOW_SKIP=1 once, when committing them before the build)
