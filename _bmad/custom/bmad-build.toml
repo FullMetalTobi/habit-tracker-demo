@@ -1,0 +1,14 @@
+# Team rules for bmad-build (committed). Personal: bmad-build.user.toml
+[workflow]
+persistent_facts = [
+  """Team rule: always write the full spec (route: dispatch) and HALT at \
+  CHECKPOINT 1 for human approval. Never take the oneshot route, even for \
+  small changes.""",
+  """Team rule: approval follows BMad: the human answers CHECKPOINT 1 with \
+  'Approve and stop' and the spec gets status ready-for-dev. Do not commit \
+  the spec at that point; the person who started the build commits it alone \
+  as 'docs(spec): ready-for-dev <slug>'.""",
+  """Team rule (TDD): write into the spec under Boundaries & Constraints / \
+  Always: 'Per task, first write a failing test and run it red, then \
+  implement.' The implementation subagent reads only the spec.""",
+]

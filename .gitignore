@@ -28,3 +28,8 @@ test-results
 .env
 .env.*
 !.env.example
+
+# BMad: personal install answers (user_name, communication_language)
+_bmad/config.user.toml
+_bmad/core/config.yaml
+_bmad/bmm/config.yaml

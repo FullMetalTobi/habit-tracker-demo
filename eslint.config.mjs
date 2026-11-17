@@ -9,6 +9,11 @@ import withNuxt from './.nuxt/eslint.config.mjs'
 
 export default withNuxt(
   {
+    // Installed BMad skills and scripts are vendored tool files (ADR: none,
+    // overwritten on every BMad update), not application code.
+    ignores: ['.claude/skills/**', '_bmad/**'],
+  },
+  {
     // Unit (Vitest) and e2e (Playwright) tests deliberately construct mock
     // stores, malformed payloads, and mock storage. `any` casts and dynamic
     // `delete` are intentional characterization tools here, not production
