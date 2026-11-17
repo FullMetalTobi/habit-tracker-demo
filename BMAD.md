@@ -16,10 +16,18 @@ Alles aus `bmad/04-build`, dazu:
   git config core.hooksPath .githooks
   ```
 
-- `.claude/settings.json` mit `.claude/hooks/stop-lint.sh` auf `SubagentStop` und `Stop`
-  (braucht `jq`): Lint am Ende jedes Subagenten und jedes Turns, blockt einmal, wenn Lint
-  rot ist. Nicht auf `PostToolUse` mit `Edit|Write`: Der Implementierungs-Subagent von
-  `bmad-build` schreibt Dateien per Bash, so ein Hook feuerte im Test kein einziges Mal.
+- `.claude/settings.json` mit `.claude/hooks/gates-on-stop.sh` auf `SubagentStop` und
+  `Stop` (Blatt Ü5, Schritte 4 und 5): Hat sich in `app`, `tests` oder `e2e` seit dem
+  letzten Lauf etwas geändert (Fingerabdruck des Git-Stands), laufen Lint und Unit-Tests,
+  einmal pro Stand. Rot: `{"decision": "block"}` mit den Fehlerzeilen, einmal
+  (Schleifenschutz `stop_hook_active`). `jq` optional, sonst `node`. Nicht auf
+  `PostToolUse` mit `Edit|Write`: Der Implementierungs-Subagent von `bmad-build` schreibt
+  Dateien per Bash, so ein Hook feuerte im Test kein einziges Mal. Direkt testen:
+
+  ```bash
+  echo '{"hook_event_name":"Stop","stop_hook_active":false}' \
+    | .claude/hooks/gates-on-stop.sh; echo "exit $?"
+  ```
 - `.claude/skills/team-verify/`: eigener Skill, gebaut mit `/bmad-workflow-builder -H`
   (BMB). Führt die Befehle unter `## Verification` der Spec aus, belegt jedes Kriterium mit
   einem bestandenen Test und schreibt ein Verdict. Anpassbar über
