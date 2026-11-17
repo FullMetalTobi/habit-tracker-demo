@@ -1,39 +1,37 @@
-# BMad-Stand: Ü3 erledigt (`bmad/03-spec-bereit`)
+# BMad-Stand: Ü4 erledigt (`bmad/04-build`)
 
-Musterlösung für Übung 3 im Seminar "Spec-Driven Development mit der BMad Method"
+Musterlösung für Übung 4 im Seminar "Spec-Driven Development mit der BMad Method"
 (Weg B). Issue #1: Kategorien für Habits mit Filter.
 
 ## Was dieser Stand enthält
 
-Alles aus `bmad/02-installiert`, dazu:
+Alles aus `bmad/03-spec-bereit`, dazu zwei Commits:
 
-- Brainstorming (`/bmad-brainstorming`, Partner-Modus, 15 Minuten, zwei Techniken:
-  Morphological Analysis und Worst Possible Idea), abgelegt, wie BMad es vorsieht:
-  `_bmad-output/brainstorming/brainstorm-habit-categories-filter-2026-11-17/`
-  mit `brainstorm-intent.md` (Richtung, 5 Entscheidungen und Risiken, Test-Hinweise)
-  und dem Protokoll `.memlog.md`.
-- Die Spec `_bmad-output/implementation-artifacts/spec-gh-1-habit-categories-filter.md`
-  aus `/bmad-build` bis CHECKPOINT 1, Status `ready-for-dev`. Antworten auf die beiden
-  Open Questions: "1: A, feste Liste (Health, Learning, Work). 2: A, Leerzustand mit
-  Reset-Button." Freigabe mit "Approve and stop". Die Person, die den Build gestartet hat,
-  hat die Spec allein committet: `docs(spec): ready-for-dev gh-1-habit-categories-filter`.
+1. `test(gh-1): ATDD scaffolds (TEA)`: `/bmad-testarch-atdd` (Murat) auf der Spec.
+   Ein Unit-Test in `tests/habit-categories.test.ts` und drei E2E-Tests in
+   `e2e/specs/habit-categories.spec.ts`, alle als `skip` geparkt; Checkliste mit
+   AC-Register in `_bmad-output/test-artifacts/`. TEA 1.27.2 empfiehlt danach
+   `dev-story`; der Weg zu `bmad-build` sind drei Zeilen, die der Mensch in die nicht
+   eingefrorenen Abschnitte der Spec schreibt (Code Map, erster Task "`.skip` entfernen,
+   rot sehen, dann grün", Verification-Befehl mit "0 skipped").
+2. `feat(gh-1): …`: der Commit von `/bmad-build <spec>` in einer frischen Session.
+   ATDD-Tests ohne `skip` und grün, Feature, neues ADR 0025, Spec mit Status `done`,
+   `baseline_commit` und Review Triage Log, `deferred-work.md` mit einem geparkten Punkt.
+   Ehrlich laut Build: Nur der Unit-Test wurde vorab rot gesehen, die E2E-Tests wurden erst
+   nach dem Code aktiviert.
 
-Hinweis: Die Spec stammt aus einem Lauf, der das Issue ohne den Brainstorm-Intent bekam.
-Mit dem Intent als Input wurde die Spec im Test deutlich länger (Schema v3, pflegbare
-Liste); die beiden Antworten oben halten den Umfang klein. Genau das lohnt sich zu
-vergleichen: Was aus dem Brainstorming nehmt ihr in die Spec, was bewusst nicht?
+Gates auf diesem Stand: Lint, Typecheck, Unit-Tests, E2E-Tests grün.
 
-## Von hier weitermachen (Ü4)
+## Von hier weitermachen (Ü5)
 
 ```bash
 git fetch origin
-git switch --no-track -c bmad-ab-ue4 origin/bmad/03-spec-bereit
+git switch --no-track -c bmad-ab-ue5 origin/bmad/04-build
 npm ci
 ```
 
-Dann `/bmad-testarch-atdd` mit der Spec als Story-Datei, drei Zeilen in die Spec
-(Code Map, Task "unskip, rot sehen", Verification-Befehl), frische Session
-`/bmad-build <spec>`.
+Dann Test-Hooks einrichten (Git-`pre-commit`, Claude-Code-Hook auf `SubagentStop`/`Stop`)
+und mit `/bmad-workflow-builder` den Skill `team-verify` bauen.
 
 ## Allgemein
 
