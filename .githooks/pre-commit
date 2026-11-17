@@ -1,0 +1,22 @@
+#!/bin/sh
+# Team gate for every commit (human or any agent). Enable once per clone:
+#   git config core.hooksPath .githooks
+log="$(git rev-parse --git-dir)/hook.log"
+echo "$(date +%T) pre-commit start" >> "$log"
+
+# Guard: no newly added skipped or focused tests (ATDD scaffolds: set
+# ALLOW_SKIP=1 once, when committing them before the build)
+if [ -z "$ALLOW_SKIP" ] && git diff --cached -U0 -- tests e2e \
+  | grep -nE '^\+.*\b(test|it|describe)\.(skip|only)\(' >&2; then
+  echo "pre-commit: new test.skip/.only in staged tests (see lines above)" >&2
+  echo "$(date +%T) pre-commit FAIL skip" >> "$log"; exit 1
+fi
+
+# Gate: lint and unit tests (~20 s)
+out="$(git rev-parse --git-dir)/pre-commit.out"
+if ! npm run --silent lint >"$out" 2>&1 || ! npm test --silent >>"$out" 2>&1
+then
+  tail -n 30 "$out" >&2; echo "pre-commit: lint or unit tests failed" >&2
+  echo "$(date +%T) pre-commit FAIL gate" >> "$log"; exit 1
+fi
+echo "$(date +%T) pre-commit ok" >> "$log"
