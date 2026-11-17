@@ -55,10 +55,12 @@ Schema-Änderung nur mit neuem ADR (0025); alte Daten und alte Backups müssen l
 - `app/utils/domain/` -- neue reine Datei (z. B. `categories.ts`): feste Kategorienliste (health/learning/work), Validierung, `filterByCategory`
 - `app/utils/domain/demo-data-generator.ts`, `e2e/support/data.ts`, `tests/fixtures/*.json` -- Builder um `category` ergänzen (Fixture bleibt ohne = Altdaten-Test)
 - `docs/adr/` + `README.md` -- neues ADR 0025; nicht ändern: ADR-0006/0010/0022
+- `tests/habit-categories.test.ts`, `e2e/specs/habit-categories.spec.ts` -- ATDD-Scaffolds (TEA, `skip`) für AC-1 bis AC-4; Liste und Annahmen in `_bmad-output/test-artifacts/atdd-checklist-spec-gh-1-habit-categories-filter.md`
 
 ## Tasks & Acceptance
 
 **Execution:**
+- [ ] `tests/habit-categories.test.ts`, `e2e/specs/habit-categories.spec.ts` -- vor dem Code, den jeder Test abdeckt: `.skip` entfernen, Test laufen lassen und rot sehen; danach grün machen. Assertions nicht abschwächen -- ATDD (TEA)
 - [ ] `tests/…` + `app/types/app-data.ts`, `storage-schema.ts` -- `category` additiv in strict + lenient Schema; Test: Altdaten/V1/Backup ohne Feld laden mit `null` -- Rückwärtskompatibilität
 - [ ] `merge-app-data.ts`, `stores/habits.ts` -- Feld mergen/speichern -- Konsistenz
 - [ ] `app/utils/domain/categories.ts` -- Filterlogik inkl. Unit-Tests der Matrix-Fälle
@@ -87,5 +89,6 @@ Gewählt: additives Feld statt V3, Präzedenz `settings.lastExportedAt` (Zod `.d
 ## Verification
 
 **Commands:**
+- `npx vitest run tests/habit-categories.test.ts && PORT=3110 E2E_PORT=3110 npx playwright test e2e/specs/habit-categories.spec.ts` -- expected: grün, 0 skipped
 - `npm run lint && npm run typecheck && npm test` -- expected: grün
 - `PORT=3110 E2E_PORT=3110 npm run test:e2e` -- expected: grün
