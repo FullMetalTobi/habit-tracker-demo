@@ -1,43 +1,37 @@
-# BMad-Stand: Ü6 erledigt (`bmad/06-review`)
+# BMad-Stand: Ü7 erledigt (`bmad/07-retro`)
 
-Musterlösung für Übung 6 im Seminar "Spec-Driven Development mit der BMad Method"
-(Weg B). Issue #1: Kategorien für Habits mit Filter.
+Musterlösung für Übung 7 im Seminar "Spec-Driven Development mit der BMad Method"
+(Weg B). Issue #1: Kategorien für Habits mit Filter. Endstand der Kette.
 
 ## Was dieser Stand enthält
 
-Alles aus `bmad/05-verify-hooks`, dazu drei Commits:
+Alles aus `bmad/06-review`, dazu:
 
-1. `_bmad/custom/bmad-code-review.toml`: drei eigene Review-Ebenen
-   (`[[workflow.review_layers]]`): Standards/ADR (liest `AGENTS.md` und den ADR-Index),
-   Security (`when`: nur bei Änderungen unter `app/`), Lint als externes Werkzeug per Bash
-   (`when`: nur bei `.ts`, `.vue`, `.mjs`). Den Spec-Abgleich macht der eingebaute
-   `acceptance-auditor`; eine eigene Ebene mit derselben `id` würde ihn samt `when`
-   ersetzen. Neu gegenüber dem Testlauf (nicht mit Agent getestet): eine Team-Regel
-   `persistent_facts`, dass akzeptierte ADRs beim Patchen nicht editiert werden.
-   Prüfen: `uv run _bmad/scripts/resolve_customization.py --skill
-   .claude/skills/bmad-code-review --project-root . --key workflow.review_layers`.
-2. `fix(gh-1): apply code review patches`: Ergebnis von `/bmad-code-review <spec>` mit
-   allen sieben Ebenen, Triage 2 decision, 2 patch, 1 defer, 13 verworfen. Patches:
-   `updateHabit` behält die Kategorie (mit Test), Badge im E2E-Test geprüft. Entscheidungen
-   und Verworfenes stehen in der Spec unter "Review Findings", der Defer-Punkt in
-   `deferred-work.md`. Im Testlauf hat der Agent dabei das akzeptierte ADR 0025 editiert
-   (verboten laut `AGENTS.md`); diese Änderung ist hier bewusst nicht übernommen.
-3. Guard für die riskante Datei (Schema): `.claude/hooks/schema-guard.sh` auf
-   `SubagentStop` und `Stop` startet die Schema-Tests, sobald `app/types/app-data.ts` oder
-   `app/utils/persistence/` geändert sind, egal mit welchem Werkzeug. `.githooks/pre-commit`
-   lehnt eine Schema-Änderung ohne neues ADR im selben Commit ab. Grenze: Auch ein kleiner
-   Fix am Schema braucht dann ein neues ADR.
+- `_bmad-output/implementation-artifacts/gh-1-retro-2026-11-17.md`: `/bmad-retrospective -H`
+  auf der einen Spec, ohne Epic und ohne `sprint-status.yaml`. Verdict
+  `accepted-with-open-items`, Befunde mit Quelle (Architektur-Delta, Duplikation,
+  Größenwachstum, Pattern-Abweichung, Spec-zu-Umsetzung), Aktionspunkte nur vorgeschlagen.
+  Der Kopf des Dokuments erklärt, was gegenüber der Ausgabe im Testlauf angepasst ist.
+- `_bmad-output/implementation-artifacts/deferred-work.md`: was Build und Code Review
+  geparkt haben. Retro-Aktion 3 ist umgesetzt (der Enum-Punkt ist als geklärt markiert),
+  der Defer-Punkt aus dem Review ist offen.
 
-## Von hier weitermachen (Ü7)
+Nicht im Repo: der Team-Plan aus Ü7 (gehört in euer eigenes Repo bzw. Wiki) und ein
+Draft-MR. `bmad-build` pusht nie; den MR legt ihr selbst an (`gh pr create --draft`
+bzw. `glab mr create --draft`). `bmad-sprint-planning` braucht Epics und lehnt ein
+einzelnes Ticket ab (Gate FAIL).
+
+## Von hier weitermachen (Hausaufgabe)
 
 ```bash
 git fetch origin
-git switch --no-track -c bmad-ab-ue7 origin/bmad/06-review
+git switch --no-track -c bmad-hausaufgabe origin/bmad/07-retro
 npm ci
 git config core.hooksPath .githooks
 ```
 
-Dann `/bmad-retrospective` kurz auf der Spec, Team-Plan, Bonus Draft-MR.
+Dann der Epic-Pfad: `/bmad-spec` für Issue #3 und #4 (oder ein eigenes Epic), ein Build
+pro Story.
 
 ## Allgemein
 
