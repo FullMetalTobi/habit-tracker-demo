@@ -79,12 +79,12 @@ coaching, reminders or stats. UI texts stay English.
 7. [x] AI prompts: `category` in both prompts and the habit export. Unit test first.
 
 ## Acceptance criteria
-- [ ] AC1: The create and edit form have a "Category" select with Health, Learning, Work and Other. A new habit defaults to Other. The choice is saved and survives a reload.
-- [ ] AC2: Habit cards on the Habits list and in the Today queue show the category as a badge.
-- [ ] AC3: The Habits list filters by category. The filter is in `?category=`, survives a reload and a shared link, "All categories" removes the param, an unknown value shows all habits, and a filter change jumps to page 1.
-- [ ] AC4: The Today queue filters by category via `?category=`. Open and Reviewed lists and the "x of y reviewed" counter count only the filtered habits. Streak strip and paused alert stay unfiltered.
-- [ ] AC5: With an active filter, empty states name the category: "No habits in <Category>" (list), "No due habits in <Category>" (Today), and "No open habits in <Category>" on the Open tab, which does not claim that everything due today is reviewed. Each offers "Show all categories", which resets the filter.
-- [ ] AC6: Stored data and backups without `category`, V1 data, and imports with an unknown value load with `other`, without a recovery banner. `schemaVersion` stays 2. A habits-only import keeps valid categories.
+- [x] AC1: The create and edit form have a "Category" select with Health, Learning, Work and Other. A new habit defaults to Other. The choice is saved and survives a reload.
+- [x] AC2: Habit cards on the Habits list and in the Today queue show the category as a badge.
+- [x] AC3: The Habits list filters by category. The filter is in `?category=`, survives a reload and a shared link, "All categories" removes the param, an unknown value shows all habits, and a filter change jumps to page 1.
+- [x] AC4: The Today queue filters by category via `?category=`. Open and Reviewed lists and the "x of y reviewed" counter count only the filtered habits. Streak strip and paused alert stay unfiltered.
+- [x] AC5: With an active filter, empty states name the category: "No habits in <Category>" (list), "No due habits in <Category>" (Today), and "No open habits in <Category>" on the Open tab, which does not claim that everything due today is reviewed. Each offers "Show all categories", which resets the filter.
+- [x] AC6: Stored data and backups without `category`, V1 data, and imports with an unknown value load with `other`, without a recovery banner. `schemaVersion` stays 2. A habits-only import keeps valid categories.
 - [ ] AC7: The cross-tab merge treats `category` as a habit field. Demo data has at least two categories, and both AI prompts include the field.
 - [ ] AC8: ADR-0026 records the decision. Unit and e2e tests cover assignment, URL filter and reload.
 
