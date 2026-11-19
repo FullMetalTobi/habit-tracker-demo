@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Habit, HabitType } from '~/types/app-data'
+import { categoryIcon, categoryLabel } from '~/utils/domain/categories'
 import { isDateInHabitPause } from '~/utils/domain/date'
 import { sortWeekdaysForDisplay, WEEKDAY_LABELS } from '~/utils/domain/weekdays'
 
@@ -166,6 +167,14 @@ function typeMeta(type: HabitType): { label: string, color: 'primary' | 'warning
 
           <div class="space-y-3">
             <div class="flex flex-wrap gap-2">
+              <UBadge
+                color="neutral"
+                variant="soft"
+                :icon="categoryIcon(habit.category)"
+                data-testid="habit-category-badge"
+              >
+                {{ categoryLabel(habit.category) }}
+              </UBadge>
               <UBadge
                 color="neutral"
                 variant="outline"

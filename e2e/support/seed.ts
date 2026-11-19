@@ -118,3 +118,11 @@ export async function authenticate(page: Page): Promise<void> {
     [DUMMY_AUTH_STORAGE_KEY, DUMMY_AUTH_EXPIRY_STORAGE_KEY, DUMMY_AUTH_TTL_MS],
   )
 }
+
+/** Flushes the bootstrap plugin's debounced save (it runs on visibilitychange → hidden). */
+export async function flushSave(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+}

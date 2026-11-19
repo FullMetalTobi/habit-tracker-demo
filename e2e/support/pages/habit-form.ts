@@ -10,6 +10,7 @@ export interface HabitFormInput {
   type?: 'build' | 'break'
   identityStatement?: string
   startDate?: string
+  category?: 'Health' | 'Learning' | 'Work' | 'Other'
   /** Weekday numbers (0=Sun..6=Sat) that should end up CHECKED. */
   weekdays?: number[]
   reminderTime?: string
@@ -34,6 +35,11 @@ export class HabitFormPage {
   async chooseType(type: 'build' | 'break'): Promise<void> {
     const label = type === 'build' ? 'Build good habit' : 'Break bad habit'
     await this.page.getByText(label).click()
+  }
+
+  async setCategory(label: 'Health' | 'Learning' | 'Work' | 'Other'): Promise<void> {
+    await this.page.getByTestId('habit-category').click()
+    await this.page.getByRole('option', { name: label }).click()
   }
 
   async setStartDate(dateKey: string): Promise<void> {
@@ -77,6 +83,7 @@ export class HabitFormPage {
     if (input.type) await this.chooseType(input.type)
     if (input.name !== undefined) await this.setName(input.name)
     if (input.identityStatement !== undefined) await this.setIdentity(input.identityStatement)
+    if (input.category) await this.setCategory(input.category)
     if (input.startDate !== undefined) await this.setStartDate(input.startDate)
     if (input.weekdays) await this.setWeekdays(input.weekdays)
     if (input.archived !== undefined) await this.setArchived(input.archived)

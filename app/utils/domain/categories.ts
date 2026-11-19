@@ -9,7 +9,7 @@ const CATEGORY_META: Record<HabitCategory, { label: string, icon: string }> = {
   other: { label: 'Other', icon: 'i-lucide-tag' },
 }
 
-export const CATEGORY_OPTIONS: ReadonlyArray<{ value: HabitCategory, label: string, icon: string }> = HABIT_CATEGORIES.map(
+export const CATEGORY_OPTIONS: Array<{ value: HabitCategory, label: string, icon: string }> = HABIT_CATEGORIES.map(
   value => ({ value, ...CATEGORY_META[value] }),
 )
 

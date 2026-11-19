@@ -69,7 +69,7 @@ coaching, reminders or stats. UI texts stay English.
 3. [x] Pure helpers in `app/utils/domain/categories.ts` (labels, icons, options,
    `parseCategoryFilter`, `filterByCategory`), `habitsByCategory` getter,
    `app/composables/use-category-filter.ts` for the URL sync. Unit tests first.
-4. [ ] Form: category select in `HabitForm.vue`, payload in `new.vue` and `[id].vue`, badge
+4. [x] Form: category select in `HabitForm.vue`, payload in `new.vue` and `[id].vue`, badge
    on the cards in `app/pages/app/habits/index.vue`. Tests: `tests/nuxt/habit-form.test.ts`,
    e2e create and edit with reload.
 5. [ ] Habits list: filter, filtered empty state, page reset in
