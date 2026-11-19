@@ -60,6 +60,10 @@ export interface HabitPause {
   end: string
 }
 
+export const HABIT_CATEGORIES = ['health', 'learning', 'work', 'other'] as const
+export type HabitCategory = typeof HABIT_CATEGORIES[number]
+export const DEFAULT_HABIT_CATEGORY: HabitCategory = 'other'
+
 export interface Habit {
   id: string
   name: string
@@ -70,6 +74,7 @@ export interface Habit {
   startDate: string
   archived: boolean
   pauses: HabitPause[]
+  category: HabitCategory
   createdAt: string
   updatedAt: string
 }
@@ -139,6 +144,8 @@ export interface HabitCreateInput {
   reminderTime: string | null
   startDate: string
   pauses?: HabitPause[]
+  // Optional so callers may omit it: create defaults to `other`, update keeps the current one.
+  category?: HabitCategory
 }
 
 export interface HabitUpdateInput extends HabitCreateInput {

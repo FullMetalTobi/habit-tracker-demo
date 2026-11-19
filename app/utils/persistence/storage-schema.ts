@@ -2,8 +2,10 @@ import { z } from 'zod'
 import {
   APP_DATA_SCHEMA_VERSION,
   COLLECTION_LIMITS,
+  DEFAULT_HABIT_CATEGORY,
   DEFAULT_SETTINGS,
   FIELD_LIMITS,
+  HABIT_CATEGORIES,
   MISS_REASON_CODES,
   PRIMARY_COLOR_OPTIONS,
   type AppDataV2,
@@ -62,8 +64,12 @@ const HabitV1Schema = z.object({
 
 // ── V2 schemas (current shape) ───────────────────────────────────────────────
 
+// Additive, defaulted field (ADR-0026): a missing or unknown value loads as `other`, no schema bump.
+const HabitCategorySchema = z.enum(HABIT_CATEGORIES).catch(DEFAULT_HABIT_CATEGORY)
+
 const HabitSchema = HabitV1Schema.extend({
   pauses: z.array(HabitPauseSchema).max(COLLECTION_LIMITS.pausesPerHabit),
+  category: HabitCategorySchema,
 })
 
 // ── Lenient habit import schema (issue #69) ──────────────────────────────────
@@ -105,6 +111,7 @@ const LenientHabitImportSchema = z.object({
   startDate: dateKeySchema.catch(() => todayDateKey()),
   archived: z.boolean().catch(false),
   pauses: z.array(HabitPauseSchema).max(COLLECTION_LIMITS.pausesPerHabit).catch([]),
+  category: HabitCategorySchema,
   createdAt: z.string().min(1).max(FIELD_LIMITS.timestamp).catch(() => nowIso()),
   updatedAt: z.string().min(1).max(FIELD_LIMITS.timestamp).catch(() => nowIso()),
 }) satisfies z.ZodType<Habit>
@@ -201,7 +208,7 @@ type AppDataV1Parsed = z.output<typeof AppDataV1Schema>
 export function migrateToV2(v1: AppDataV1Parsed): AppDataV2 {
   return {
     schemaVersion: APP_DATA_SCHEMA_VERSION,
-    habits: v1.habits.map(habit => ({ ...habit, pauses: [] })),
+    habits: v1.habits.map(habit => ({ ...habit, pauses: [], category: DEFAULT_HABIT_CATEGORY })),
     entries: v1.entries,
     suggestions: v1.suggestions,
     settings: v1.settings,

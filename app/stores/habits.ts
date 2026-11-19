@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { toRaw } from 'vue'
+import { DEFAULT_HABIT_CATEGORY } from '~/types/app-data'
 import type { Habit, HabitCreateInput, HabitPause, HabitUpdateInput } from '~/types/app-data'
 import { compareDateKeys, nowIso, isHabitDueOnDate } from '~/utils/domain/date'
 import { createId } from '~/utils/domain/id'
@@ -56,6 +57,7 @@ export const useHabitsStore = defineStore('habits', {
         startDate: input.startDate,
         archived: false,
         pauses: normalizePauses(input.pauses),
+        category: input.category ?? DEFAULT_HABIT_CATEGORY,
         createdAt: now,
         updatedAt: now,
       }
@@ -77,6 +79,7 @@ export const useHabitsStore = defineStore('habits', {
       habit.startDate = input.startDate
       habit.archived = input.archived
       habit.pauses = normalizePauses(input.pauses)
+      habit.category = input.category ?? habit.category
       habit.updatedAt = nowIso()
 
       return habit
