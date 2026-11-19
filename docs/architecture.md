@@ -159,6 +159,11 @@ actionable reason, and `parseAppData` remains a thin throwing wrapper over it
 [adr/0010](adr/0010-appdatav2-flexible-schedules-pause-ranges.md), and
 [adr/0006](adr/0006-zod-validated-versioned-data-schema.md)).
 
+Each `Habit` also has a `category` (`health | learning | work | other`). It is an additive field:
+the Zod schemas default a missing or unknown value to `other` and `schemaVersion` stays `2`
+(see [adr/0026](adr/0026-habit-category-additive-defaulted-field.md)). The Habits list and the
+Today queue filter by it in memory; the filter is only the `?category=` URL param.
+
 The **backup import/export** flow on the settings page is presentation only: the pure,
 framework-free `app/utils/persistence/backup.ts` owns `extractImportedHabits`,
 `mergeHabitsForImport`, `serializeBackup`, and `backupFilename`, and the AI prompt builders

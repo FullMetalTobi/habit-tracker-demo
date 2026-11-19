@@ -11,6 +11,10 @@ The domain vocabulary used throughout the code, mostly borrowed from James Clear
     in the `increase` direction.
   - **break** — a behavior you want to do less. Coaching pushes its laws in the `decrease`
     direction.
+- **Category (`Habit.category`)** — one of `health`, `learning`, `work`, `other` (fixed set,
+  default `other`). Used to badge and filter habits; the filter lives in the URL as
+  `?category=` and is not persisted (see
+  [adr/0026](adr/0026-habit-category-additive-defaulted-field.md)).
 - **Identity statement** — the self-concept the habit reinforces (e.g. "I am a runner").
   Atomic Habits frames lasting change as identity-based; the statement is shown as a cue and in
   reminders.
