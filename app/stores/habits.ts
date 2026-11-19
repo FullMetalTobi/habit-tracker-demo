@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { toRaw } from 'vue'
 import { DEFAULT_HABIT_CATEGORY } from '~/types/app-data'
-import type { Habit, HabitCreateInput, HabitPause, HabitUpdateInput } from '~/types/app-data'
+import type { Habit, HabitCategory, HabitCreateInput, HabitPause, HabitUpdateInput } from '~/types/app-data'
 import { compareDateKeys, nowIso, isHabitDueOnDate } from '~/utils/domain/date'
 import { createId } from '~/utils/domain/id'
 
@@ -28,6 +28,8 @@ export const useHabitsStore = defineStore('habits', {
   getters: {
     activeHabits: (state): Habit[] => state.habits.filter(habit => !habit.archived),
     archivedHabits: (state): Habit[] => state.habits.filter(habit => habit.archived),
+    habitsByCategory: state => (category: HabitCategory): Habit[] =>
+      state.habits.filter(habit => habit.category === category),
     habitById: state => (id: string): Habit | undefined => state.habits.find(habit => habit.id === id),
     dueHabitsForDate: state => (dateKey: string): Habit[] =>
       state.habits.filter(habit => isHabitDueOnDate(habit, dateKey)),
