@@ -76,7 +76,7 @@ coaching, reminders or stats. UI texts stay English.
    `app/pages/app/habits/index.vue`. Test: e2e list filter with deep link.
 6. [x] Today: filter, filtered counters, badges, filtered empty states (including the Open tab)
    in `app/pages/app/index.vue`. Test: e2e Today filter.
-7. [ ] AI prompts: `category` in both prompts and the habit export. Unit test first.
+7. [x] AI prompts: `category` in both prompts and the habit export. Unit test first.
 
 ## Acceptance criteria
 - [ ] AC1: The create and edit form have a "Category" select with Health, Learning, Work and Other. A new habit defaults to Other. The choice is saved and survives a reload.

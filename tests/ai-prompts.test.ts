@@ -13,6 +13,7 @@ function validHabit(overrides: Partial<Habit> = {}): Habit {
     startDate: '2026-02-01',
     archived: false,
     pauses: [],
+    category: 'other',
     createdAt: '2026-02-01T00:00:00.000Z',
     updatedAt: '2026-02-01T00:00:00.000Z',
     ...overrides,
@@ -52,5 +53,19 @@ describe('buildCurrentHabitsPrompt (#69)', () => {
     const snapshot = prompt.slice(jsonStart)
     expect(snapshot).not.toContain('createdAt')
     expect(snapshot).not.toContain('updatedAt')
+  })
+})
+
+describe('category in the AI prompts', () => {
+  it('both prompts describe the category field and its allowed values', () => {
+    for (const prompt of [buildGettingStartedPrompt('2026-01-01'), buildCurrentHabitsPrompt([])]) {
+      expect(prompt).toContain('"category": "health|learning|work|other"')
+    }
+    expect(buildGettingStartedPrompt('2026-01-01')).toContain('category: one of "health", "learning", "work", "other"')
+  })
+
+  it('the current-habits snapshot carries each habit category', () => {
+    const prompt = buildCurrentHabitsPrompt([validHabit({ id: 'habit_abc', category: 'health' })])
+    expect(prompt.slice(prompt.indexOf('```json'))).toContain('"category": "health"')
   })
 })

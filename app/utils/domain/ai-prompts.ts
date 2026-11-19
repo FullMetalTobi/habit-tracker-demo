@@ -23,6 +23,7 @@ Goal:
 Required fields for each habit:
 - name: short habit title
 - type: "build" or "break"
+- category: one of "health", "learning", "work", "other" (default "other")
 - identityStatement: identity-based statement in first person
 - scheduleWeekdays: array of weekday numbers (0=Sun, 1=Mon, ... 6=Sat)
 - reminderTime: "HH:mm" 24-hour string or null
@@ -46,6 +47,7 @@ Output format:
     {
       "name": "string",
       "type": "build|break",
+      "category": "health|learning|work|other",
       "identityStatement": "string",
       "scheduleWeekdays": [1,2,3],
       "reminderTime": "HH:mm or null",
@@ -68,6 +70,7 @@ export function buildCurrentHabitsPrompt(habits: Habit[]): string {
         id: habit.id,
         name: habit.name,
         type: habit.type,
+        category: habit.category,
         identityStatement: habit.identityStatement,
         scheduleWeekdays: habit.scheduleWeekdays,
         reminderTime: habit.reminderTime,
@@ -99,6 +102,7 @@ Output format:
       "id": "existing-or-new-id",
       "name": "string",
       "type": "build|break",
+      "category": "health|learning|work|other",
       "identityStatement": "string",
       "scheduleWeekdays": [1,2,3],
       "reminderTime": "HH:mm or null",
