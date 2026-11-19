@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Habit, HabitType } from '~/types/app-data'
-import { categoryIcon, categoryLabel } from '~/utils/domain/categories'
+import type { Habit, HabitCategory, HabitType } from '~/types/app-data'
+import { CATEGORY_OPTIONS, categoryIcon, categoryLabel, filterByCategory } from '~/utils/domain/categories'
 import { isDateInHabitPause } from '~/utils/domain/date'
 import { sortWeekdaysForDisplay, WEEKDAY_LABELS } from '~/utils/domain/weekdays'
 
@@ -17,12 +17,23 @@ function isCurrentlyPaused(habit: Habit): boolean {
   return isDateInHabitPause(habit, clock.todayKey.value)
 }
 
+const { category: categoryFilter, setCategory } = useCategoryFilter()
+
+const ALL_CATEGORIES = 'all'
+const filterItems = [{ value: ALL_CATEGORIES, label: 'All categories' }, ...CATEGORY_OPTIONS]
+const filterValue = computed<string>({
+  get: () => categoryFilter.value ?? ALL_CATEGORIES,
+  set: (value) => {
+    void setCategory(value === ALL_CATEGORIES ? null : (value as HabitCategory))
+  },
+})
+
 const showArchived = ref(false)
 const page = ref(1)
 const itemsPerPage = 6
 
 const filteredHabits = computed(() =>
-  habitsStore.habits
+  filterByCategory(habitsStore.habits, categoryFilter.value)
     .filter(habit => (showArchived.value ? true : !habit.archived))
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)),
 )
@@ -53,6 +64,11 @@ const habitTypeMeta: Record<HabitType, { label: string, color: 'primary' | 'warn
     badgeVariant: 'soft',
   },
 }
+
+// A filter change always starts at the first page.
+watch(categoryFilter, () => {
+  page.value = 1
+})
 
 watch(total, (value) => {
   const maxPage = Math.max(1, Math.ceil(value / itemsPerPage))
@@ -105,7 +121,16 @@ function typeMeta(type: HabitType): { label: string, color: 'primary' | 'warning
           </div>
         </template>
 
-        <div class="space-y-2">
+        <div class="space-y-3">
+          <UFormField label="Filter by category">
+            <USelect
+              v-model="filterValue"
+              data-testid="category-filter"
+              :items="filterItems"
+              value-key="value"
+              class="w-full sm:w-56"
+            />
+          </UFormField>
           <UCheckbox
             v-model="showArchived"
             label="Show archived habits"
@@ -122,7 +147,15 @@ function typeMeta(type: HabitType): { label: string, color: 'primary' | 'warning
       </p>
 
       <UEmpty
-        v-if="!total"
+        v-if="!total && categoryFilter"
+        icon="i-lucide-filter-x"
+        :title="`No habits in ${categoryLabel(categoryFilter)}`"
+        description="No habit matches this category. Show all categories to see everything."
+        :actions="[{ label: 'Show all categories', icon: 'i-lucide-x', onClick: () => setCategory(null) }]"
+      />
+
+      <UEmpty
+        v-else-if="!total"
         icon="i-lucide-list-checks"
         title="No habits yet"
         description="Create your first habit and start collecting identity votes."

@@ -54,4 +54,58 @@ test.describe('Habit categories', () => {
     await page.reload()
     await expect(page.locator('.habit-card').filter({ hasText: 'Run' }).getByTestId('habit-category-badge')).toHaveText('Health')
   })
+
+  test('E3 list filter: URL sync, deep link, reload, reset, unknown value, page reset, empty state', async ({ authedPage: page, seed }) => {
+    const learning = Array.from({ length: 7 }, (_, i) =>
+      makeHabit({ name: `Study ${i + 1}`, category: 'learning', updatedAt: `2026-01-0${i + 1}T00:00:00.000Z` }))
+    const work = makeHabit({ name: 'Inbox zero', category: 'work' })
+    await seed(makeAppData({ habits: [...learning, work] }))
+
+    const cards = page.locator('.habit-card')
+    const filter = page.getByTestId('category-filter')
+
+    // Deep link and reload keep the filter.
+    await page.goto('/app/habits?category=work')
+    await expect(cards).toHaveCount(1)
+    await expect(cards.first()).toContainText('Inbox zero')
+    await expect(filter).toContainText('Work')
+    await page.reload()
+    await expect(cards).toHaveCount(1)
+
+    // Picking a category writes the URL; page 2 exists for 7 habits.
+    await filter.click()
+    await page.getByRole('option', { name: 'Learning' }).click()
+    await expect(page).toHaveURL(/category=learning/)
+    await expect(cards).toHaveCount(6)
+    await page.getByRole('button', { name: 'Page 2' }).click()
+    await expect(cards).toHaveCount(1)
+
+    // A filter change jumps back to page 1.
+    await filter.click()
+    await page.getByRole('option', { name: 'Work' }).click()
+    await expect(page).toHaveURL(/category=work/)
+    await expect(cards).toHaveCount(1)
+    await expect(cards.first()).toContainText('Inbox zero')
+
+    // Empty state names the category and resets the filter.
+    await filter.click()
+    await page.getByRole('option', { name: 'Health' }).click()
+    await expect(page.getByText('No habits in Health')).toBeVisible()
+    await page.getByRole('button', { name: 'Show all categories' }).click()
+    await expect(page).not.toHaveURL(/category=/)
+    await expect(cards).toHaveCount(6)
+    await expect(page.getByText('8 habits shown')).toBeVisible()
+
+    // "All categories" removes the param.
+    await filter.click()
+    await page.getByRole('option', { name: 'Work' }).click()
+    await filter.click()
+    await page.getByRole('option', { name: 'All categories' }).click()
+    await expect(page).not.toHaveURL(/category=/)
+
+    // An unknown value shows everything.
+    await page.goto('/app/habits?category=bogus')
+    await expect(page.getByText('8 habits shown')).toBeVisible()
+    await expect(filter).toContainText('All categories')
+  })
 })

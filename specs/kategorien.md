@@ -72,7 +72,7 @@ coaching, reminders or stats. UI texts stay English.
 4. [x] Form: category select in `HabitForm.vue`, payload in `new.vue` and `[id].vue`, badge
    on the cards in `app/pages/app/habits/index.vue`. Tests: `tests/nuxt/habit-form.test.ts`,
    e2e create and edit with reload.
-5. [ ] Habits list: filter, filtered empty state, page reset in
+5. [x] Habits list: filter, filtered empty state, page reset in
    `app/pages/app/habits/index.vue`. Test: e2e list filter with deep link.
 6. [ ] Today: filter, filtered counters, badges, filtered empty states (including the Open tab)
    in `app/pages/app/index.vue`. Test: e2e Today filter.
