@@ -1,4 +1,5 @@
 import { test, expect } from '../support/fixtures'
+import { DashboardPage } from '../support/pages/dashboard'
 import { HabitFormPage } from '../support/pages/habit-form'
 import { flushSave, readPersistedStore } from '../support/seed'
 import { makeAppData, makeHabit } from '../support/data'
@@ -107,5 +108,58 @@ test.describe('Habit categories', () => {
     await page.goto('/app/habits?category=bogus')
     await expect(page.getByText('8 habits shown')).toBeVisible()
     await expect(filter).toContainText('All categories')
+  })
+
+  test('E4 Today filter: counters, badges, filtered empty states, streak strip stays unfiltered', async ({ authedPage: page, seed }) => {
+    const daily = { scheduleWeekdays: [0, 1, 2, 3, 4, 5, 6] }
+    const studyA = makeHabit({ ...daily, name: 'Study A', category: 'learning', reminderTime: '08:00' })
+    const studyB = makeHabit({ ...daily, name: 'Study B', category: 'learning', reminderTime: '09:00' })
+    const run = makeHabit({ ...daily, name: 'Run', category: 'health', reminderTime: '10:00' })
+    await seed(makeAppData({ habits: [studyA, studyB, run] }))
+
+    const dash = new DashboardPage(page)
+    const filter = page.getByTestId('category-filter')
+
+    await page.goto('/app?category=learning')
+    await expect(dash.cards).toHaveCount(2)
+    await expect(dash.card('Study A').getByTestId('queue-category-badge')).toHaveText('Learning')
+    await expect(dash.progressText()).toHaveText('0 of 2 reviewed')
+    await expect(filter).toContainText('Learning')
+
+    // The streak strip and its count stay unfiltered.
+    await expect(page.getByText('3 habits', { exact: true })).toBeVisible()
+    await expect(page.getByText('Run', { exact: true })).toBeVisible()
+
+    // The badge must not push the page sideways on narrow viewports.
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
+
+    await dash.markDone('Study A')
+    await dash.markDone('Study B')
+    await expect(dash.progressText()).toHaveText('2 of 2 reviewed')
+    await expect(page.getByText('No open habits in Learning')).toBeVisible()
+    await expect(page.getByText('Everything due today has already been reviewed.')).toHaveCount(0)
+
+    // The filter survives a reload (the reviews are persisted first).
+    await flushSave(page)
+    await expect
+      .poll(async () => (await readPersistedStore<{ status: string }>(page, 'entries')).filter(e => e.status === 'done').length)
+      .toBe(2)
+    await page.reload()
+    await expect(page).toHaveURL(/category=learning/)
+    await expect(dash.progressText()).toHaveText('2 of 2 reviewed')
+
+    // A category without due habits names itself; "Show all categories" resets.
+    await filter.click()
+    await page.getByRole('option', { name: 'Work' }).click()
+    await expect(page.getByText('No due habits in Work')).toBeVisible()
+    await page.getByRole('button', { name: 'Show all categories' }).click()
+    await expect(page).not.toHaveURL(/category=/)
+    await expect(dash.progressText()).toHaveText('2 of 3 reviewed')
+
+    // Open tab with another category: Run is open, so no empty alert.
+    await filter.click()
+    await page.getByRole('option', { name: 'Health' }).click()
+    await expect(dash.card('Run').getByTestId('queue-category-badge')).toHaveText('Health')
+    await expect(dash.progressText()).toHaveText('0 of 1 reviewed')
   })
 })

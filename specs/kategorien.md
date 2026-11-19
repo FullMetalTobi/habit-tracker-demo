@@ -74,7 +74,7 @@ coaching, reminders or stats. UI texts stay English.
    e2e create and edit with reload.
 5. [x] Habits list: filter, filtered empty state, page reset in
    `app/pages/app/habits/index.vue`. Test: e2e list filter with deep link.
-6. [ ] Today: filter, filtered counters, badges, filtered empty states (including the Open tab)
+6. [x] Today: filter, filtered counters, badges, filtered empty states (including the Open tab)
    in `app/pages/app/index.vue`. Test: e2e Today filter.
 7. [ ] AI prompts: `category` in both prompts and the habit export. Unit test first.
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
-import type { HabitType } from '~/types/app-data'
+import type { HabitCategory, HabitType } from '~/types/app-data'
+import { CATEGORY_OPTIONS, categoryIcon, categoryLabel, filterByCategory } from '~/utils/domain/categories'
 import {
   addDays,
   calendarDateToDateKey,
@@ -121,8 +122,21 @@ const pausedHabitsForDate = computed(() =>
   habitsStore.activeHabits.filter(habit => isDateInHabitPause(habit, dateKey.value)),
 )
 
+// Category filter from `?category=` (ADR-0026). It scopes the Open/Reviewed lists and the
+// counters; the streak strip and the paused alert deliberately stay unfiltered.
+const { category: categoryFilter, setCategory } = useCategoryFilter()
+
+const ALL_CATEGORIES = 'all'
+const filterItems = [{ value: ALL_CATEGORIES, label: 'All categories' }, ...CATEGORY_OPTIONS]
+const filterValue = computed<string>({
+  get: () => categoryFilter.value ?? ALL_CATEGORIES,
+  set: (value) => {
+    void setCategory(value === ALL_CATEGORIES ? null : (value as HabitCategory))
+  },
+})
+
 const dueHabitModels = computed(() =>
-  dueHabits.value.map(habit => ({
+  filterByCategory(dueHabits.value, categoryFilter.value).map(habit => ({
     habit,
     entry: entriesStore.entryByHabitAndDate(habit.id, dateKey.value),
   })),
@@ -496,19 +510,37 @@ function reopenHabit(habitId: string): void {
 
       <UCard>
         <template #header>
-          <div class="flex items-center gap-2">
-            <UIcon
-              name="i-lucide-list-todo"
-              class="size-5 text-muted"
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <UIcon
+                name="i-lucide-list-todo"
+                class="size-5 text-muted"
+              />
+              <h2 class="text-lg font-semibold">
+                {{ isToday ? "Today's habit queue" : 'Habit queue' }}
+              </h2>
+            </div>
+            <USelect
+              v-model="filterValue"
+              data-testid="category-filter"
+              aria-label="Filter by category"
+              :items="filterItems"
+              value-key="value"
+              class="w-full sm:w-48"
             />
-            <h2 class="text-lg font-semibold">
-              {{ isToday ? "Today's habit queue" : 'Habit queue' }}
-            </h2>
           </div>
         </template>
 
         <UEmpty
-          v-if="!dueHabitModels.length"
+          v-if="!dueHabitModels.length && categoryFilter"
+          icon="i-lucide-filter-x"
+          :title="`No due habits in ${categoryLabel(categoryFilter)}`"
+          description="Nothing in this category is due. Show all categories to see the whole queue."
+          :actions="[{ label: 'Show all categories', icon: 'i-lucide-x', onClick: () => setCategory(null) }]"
+        />
+
+        <UEmpty
+          v-else-if="!dueHabitModels.length"
           icon="i-lucide-calendar-check-2"
           :title="isToday ? 'No habits due today' : 'No habits were due'"
           :description="isToday ? 'Create a habit or adjust schedule weekdays.' : 'Nothing was scheduled on this day.'"
@@ -555,6 +587,15 @@ function reopenHabit(habitId: string): void {
                       <p class="text-sm text-muted">
                         {{ model.habit.identityStatement }}
                       </p>
+                      <UBadge
+                        color="neutral"
+                        variant="soft"
+                        size="sm"
+                        :icon="categoryIcon(model.habit.category)"
+                        data-testid="queue-category-badge"
+                      >
+                        {{ categoryLabel(model.habit.category) }}
+                      </UBadge>
                     </div>
                     <div class="flex shrink-0 flex-col items-end gap-1.5">
                       <UBadge
@@ -603,7 +644,15 @@ function reopenHabit(habitId: string): void {
           <template #open>
             <div class="mt-4 space-y-2">
               <UAlert
-                v-if="!openHabits.length"
+                v-if="!openHabits.length && categoryFilter"
+                color="success"
+                variant="subtle"
+                :title="`No open habits in ${categoryLabel(categoryFilter)}`"
+                description="Other categories may still have open habits."
+                :actions="[{ label: 'Show all categories', color: 'neutral', variant: 'outline', onClick: () => setCategory(null) }]"
+              />
+              <UAlert
+                v-else-if="!openHabits.length"
                 color="success"
                 variant="subtle"
                 title="No open habits"
@@ -631,6 +680,15 @@ function reopenHabit(habitId: string): void {
                       <p class="text-sm text-muted">
                         {{ model.habit.identityStatement }}
                       </p>
+                      <UBadge
+                        color="neutral"
+                        variant="soft"
+                        size="sm"
+                        :icon="categoryIcon(model.habit.category)"
+                        data-testid="queue-category-badge"
+                      >
+                        {{ categoryLabel(model.habit.category) }}
+                      </UBadge>
                     </div>
                     <div class="flex shrink-0 flex-col items-end gap-1.5">
                       <UBadge
